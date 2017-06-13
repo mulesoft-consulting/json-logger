@@ -21,7 +21,8 @@ While the module (`json-logger-module`) is based on DevKit, as part of the dynam
 Thus, in order to be able to install this connector, you first need to install this extension:
 
 ```cd jsonschema2pojo-custom-devkitannotation
-mvn clean install```
+mvn clean install
+```
 
 The you can proceed to install the `json-logger-module` as any other DevKit connector.
 
