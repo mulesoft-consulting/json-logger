@@ -1,0 +1,48 @@
+{
+   "$schema":"http://json-schema.org/draft-04/schema#",
+   "description":"Definition for fields globally defined in the logger config",
+   "type":"object",
+   "properties":{
+      "prettyPrint":{
+         "type":"boolean",
+         "devkit": {
+         	"description": "Currently this field is mandatory so DON'T REMOVE",
+         	"placement":"JSON Output",
+         	"default": "true",
+         	"isConfig": true
+         }
+      },
+      "startTimestamp":{
+         "type":"string",
+         "devkit": {
+         	"placement":"Default expressions",
+         	"default": "#[new org.joda.time.DateTime().withZone(org.joda.time.DateTimeZone.forID(\"${json.logger.timezone}\")).toString(\"${json.logger.dateformat}\")]",
+         	"isConfig": true
+         }
+      },
+      "threadName":{
+         "type":"string",
+         "devkit": {
+         	"placement":"Default expressions",
+         	"default": "#[Thread.currentThread().getName()]",
+         	"isConfig": true
+         }
+      },
+      "applicationName":{
+         "type":"string",
+         "devkit": {
+         	"placement":"Global",
+         	"default": "${json.logger.header.applicationname}",
+         	"isConfig": true
+         }
+      },
+      "source":{
+         "type":"string",
+         "devkit": {
+         	"placement":"Global",
+         	"default": "${json.logger.header.source}",
+         	"isConfig": true
+         }
+      }
+   }
+}

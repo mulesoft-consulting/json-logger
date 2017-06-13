@@ -1,0 +1,61 @@
+{
+   "$schema":"http://json-schema.org/draft-04/schema#",
+   "description":"Definition for fields used in the logger message processor",
+   "type":"object",
+   "properties":{
+      "applicationName":{
+         "type":"string",
+         "devkit": {
+         	"default": "should be defined on the connector config schema",
+         	"isHidden": true
+         }
+      },
+      "source":{
+         "type":"string",
+         "devkit": {
+         	"default": "should be defined on the connector config schema",
+         	"isHidden": true
+         }
+      },
+      "startTimestamp":{
+         "type":"string",
+         "devkit": {
+         	"default": "should be defined on the connector config schema",
+         	"isHidden": true
+         }
+      },
+      "threadName":{
+         "type":"string",
+         "devkit": {
+         	"default": "should be defined on the connector config schema",
+         	"isHidden": true
+         }
+      },
+      "correlationId":{
+         "type":"string",
+         "devkit": {
+         	"default": "#[message.id]"
+         }
+      },
+      "priority":{
+         "type":"string",
+         "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
+         "devkit": {
+         	"default": "INFO"
+         }
+      },
+      "message":{
+         "type":"string",
+         "devkit": {
+         	"default": ""
+         }
+      },
+      "elapsed":{
+         "type":"string",
+         "devkit": {
+         	"default": "calculated internally",
+         	"isHidden": true
+         }
+      }
+   }
+}
