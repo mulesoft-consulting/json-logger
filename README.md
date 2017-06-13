@@ -113,3 +113,6 @@ From `loggerProcessor.json`:
 
 In this example we are telling the connector that the value for the "startTimeStamp" in the output JSON will be defined by the expression "#[new org.joda.time.DateTime().withZone(org.joda.time.DateTimeZone.forID(\"${json.logger.timezone}\")).toString(\"${json.logger.dateformat}\")]" defined in the connector's config. MEL expressions (`#[]`) will be resolved at runtime while properties (`${}`) are resolved at startup time.
 
+## Author
+
+* **Andres Ramirez** [Slack: @andres.ramirez / Email: andres.ramirez@mulesoft.com]
