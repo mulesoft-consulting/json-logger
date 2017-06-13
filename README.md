@@ -78,7 +78,7 @@ With the exception of `"description"` all the attributes within devkit will map 
 ```
 
 - `default`: String value or MEL expression assigned by default ([@Default](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#default-annotation))
-- `isHidden`: Boolean value that will ignore this attribute at the message processor level but will keep it as part of the output JSON structure. This means that the vaule needs to be setup either programatically or by using a default expression defined at the config level (see passing global expressions as processor values [Link-name2](#passing-global-expressions-as-processor-values)) ([@Ignore](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.7/annotation-reference#ignan))
+- `isHidden`: Boolean value that will ignore this attribute at the message processor level but will keep it as part of the output JSON structure. This means that the vaule needs to be setup either programatically or by using a default expression defined at the config level (see [passing global expressions as processor values](#passing-global-expressions-as-processor-values)) ([@Ignore](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.7/annotation-reference#ignan))
 
 #### Passing global expressions as processor values
 
