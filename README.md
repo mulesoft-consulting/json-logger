@@ -16,11 +16,12 @@ For this purpose, I created this generic JSON Logger connector (based on devkit)
 
 ## Installation
 
-While the module (`json-logger-module`) is based on DevKit, as part of the dynamic code generation it uses a maven plugin called `jsonschema2pojo` to generate the required POJO's based on a predefined JSON schema. However, in order to generate a POJO that also includes DevKit specific annotations, I created a custom annotation extension called `jsonschema2pojo-custom-devkitannotation`
+While the module `json-logger-module` is based on DevKit, as part of the dynamic code generation it uses a maven plugin called `jsonschema2pojo` to generate the required POJO's based on a predefined JSON schema. However, in order to generate a POJO that also includes DevKit specific annotations, I created a custom annotation extension called `jsonschema2pojo-custom-devkitannotation`
 
 Thus, in order to be able to install this connector, you first need to install this extension:
 
-```cd jsonschema2pojo-custom-devkitannotation
+```bash
+cd jsonschema2pojo-custom-devkitannotation
 mvn clean install
 ```
 
