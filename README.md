@@ -2,6 +2,8 @@
 
 Drop-in replacement for default Mule Logger that outputs a JSON structure based on a predefined JSON schema.
 
+## Why?
+
 Typically we put the burden of generating logs to developers. While doing so we also expect all developers will think alike or align to a particular standard without giving them any tools to enforce that standard.
 
 Small but core best practices like embedding a correlation Id on each log entry are unfortunately not always followed which drastically impacts troubleshooting down the road. 
