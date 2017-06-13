@@ -25,5 +25,16 @@ cd jsonschema2pojo-custom-devkitannotation
 mvn clean install
 ```
 
-The you can proceed to install the `json-logger-module` as any other DevKit connector.
+Then you can proceed to install the `json-logger-module` as any other DevKit connector.
 
+## Usage
+
+As already described, the idea is that based on a JSON schema (actually 2 JSON schemas) we can generate a connector that takes in those parameters in a standard manner, ideally with most values defined from default expressions (e.g. `correlationId` could have a default expression of `#[message.id]`)
+
+Inside the `json-logger-module` we will find the following JSON schemas:
+```markdown
+- src/main/resources
+  - schemas
+    - loggerConfig.json
+    - loggerProcessor.json
+```
