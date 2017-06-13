@@ -27,7 +27,7 @@ mvn clean install
 
 Then you can proceed to install the `json-logger-module` as any other DevKit connector.
 
-## Usage
+## Configuration
 
 As already described, the idea is that based on a JSON schema (actually 2 JSON schemas) we can generate a connector that takes in those parameters in a standard manner, ideally with most values defined from default expressions (e.g. `correlationId` could have a default expression of `#[message.id]`)
 
@@ -112,6 +112,41 @@ From `loggerProcessor.json`:
 ```
 
 In this example we are telling the connector that the value for the "startTimeStamp" in the output JSON will be defined by the expression "#[new org.joda.time.DateTime().withZone(org.joda.time.DateTimeZone.forID(\"${json.logger.timezone}\")).toString(\"${json.logger.dateformat}\")]" defined in the connector's config. MEL expressions (`#[]`) will be resolved at runtime while properties (`${}`) are resolved at startup time.
+
+## Usage
+
+The current example assumes an output JSON as follows:
+
+```json
+{
+  "applicationName" : "test-app",
+  "source" : "mule",
+  "startTimestamp" : "2017-06-13 18:32:22.805",
+  "threadName" : "[logger-test-app].logger-test-appFlow.stage1.02",
+  "correlationId" : "291fbe50-5088-11e7-b251-f45c898c34ab",
+  "priority" : "INFO",
+  "message" : "test payload",
+  "elapsed" : "3349"
+}
+```
+
+Also, the current connector's code assumes the existence of an "elapsed" attribute at the root level of the JSON structure. An enhancement would be to also make this part dynamic but currently run out of time :)
+
+```java
+if (elapsed != null) {
+  loggerJson.setElapsed(Long.toString(elapsed));
+}
+```
+
+#### Elapsed time calculation
+
+A popular requirement among our customers is to be able to calculate elapsed times throughout the mule application. In order to do so, the connector uses a `timer` flowVariable. By default its assigned to `#[flowVars['timerVariable']]`.
+
+Everytime the logger is used, the connector will look for a default `timerVariable flowVar` (this can be changed per processor) and if it doesn't find the flowVar it will create one with the current timestamp value. When the connector finds the variable (e.g. the second time it's used), instead of setting the current timestamp it will calculate the elapsed time between the original timestamp value and the current timestamp at that point.
+
+#### JSON pretty print
+
+Currently the connector config requires an attribute called `prettyPrint` that tells the connector if the output should be a formated JSON or inline.
 
 ## Author
 
