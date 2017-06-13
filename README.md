@@ -80,7 +80,7 @@ With the exception of `"description"` all the attributes within devkit will map 
 - `default`: String value or MEL expression assigned by default ([@Default](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#default-annotation))
 - `isHidden`: Boolean value that will ignore this attribute at the message processor level but will keep it as part of the output JSON structure. This means that the vaule needs to be setup either programatically or by using a default expression defined at the config level (see passing global expressions as processor values) ([@Ignore](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.7/annotation-reference#ignan))
 
-#### Passing global expressions as processor values
+#### Passing global expressions as processor values (#passing-global-expressions)
 
 There are situations where we may want a particular value in the output JSON structure (e.g. timestamp) but we don't want the developer to be able to tinker with the default value at the processor level. Rather we want this field to be auto-calculated or defined globally (at the config level). In order to keep the actual connector code changes minimal (or preferrably non-existent) the base connector code can override the values in the JSON message processor with either values or expressions defined in the connector's config. All that we need is to have the exact same attribute name in the `loggerConfig.json` as defined in the `loggerProcessor.json`. Also, because we are overriding the value of the attribute in the JSON message processor, we should mark it as `"isHidden": true`
 
