@@ -58,8 +58,55 @@ Given both schemas serve different purposes, the supported devkit annotations ar
   }
 }
 ```
+
 With the exception of `"description"` all the attributes within devkit will map to an specific devkit annotation:  
 
 - `placement`: Indicates the placement of the attribute ([@Placement](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#placement-field-order-grouping-and-tabs))
 - `default`: String value or MEL expression assigned by default ([@Default](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#default-annotation))
 - `isConfig`: Boolean that indicates if this attribute should be part of the configurable attributes ([@Configurable](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#configurable-annotation))
+
+#### loggerProcessor.json
+
+```json
+"correlationId":{
+  "type":"string",
+  "devkit": {
+    "default": "#[message.id]",
+    "isHidden": false
+  }
+}
+```
+
+- `default`: String value or MEL expression assigned by default ([@Default](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#default-annotation))
+- `isHidden`: Boolean value that will ignore this attribute at the message processor level but will keep it as part of the output JSON structure. This means that the vaule needs to be setup either programatically or by using a default expression defined at the config level (see passing global expressions as processor values) ([@Ignore](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.7/annotation-reference#ignan))
+
+#### Passing global expressions as processor values
+
+There are situations where we may want a particular value in the output JSON structure (e.g. timestamp) but we don't want the developer to be able to tinker with the default value at the processor level. Rather we want this field to be auto-calculated or defined globally (at the config level). In order to keep the actual connector code changes minimal (or preferrably non-existent) the base connector code can override the values in the JSON message processor with either values or expressions defined in the connector's config. All that we need is to have the exact same attribute name in the `loggerConfig.json` as defined in the `loggerProcessor.json`. Also, because we are overriding the value of the attribute in the JSON message processor, we should mark it as `"isHidden": true`
+
+For example:
+
+From `loggerConfig.json`:
+
+```json
+"startTimestamp":{
+  "type":"string",
+  "devkit": {
+    "placement":"Default expressions",
+    "default": "#[new org.joda.time.DateTime().withZone(org.joda.time.DateTimeZone.forID(\"${json.logger.timezone}\")).toString(\"${json.logger.dateformat}\")]",
+    "isConfig": true
+  }
+}
+```
+
+From `loggerProcessor.json`:
+
+```json
+"startTimestamp":{
+  "type":"string",
+  "devkit": {
+    "default": "should be defined on the connector config schema",
+    "isHidden": true
+  }
+}
+```
