@@ -38,3 +38,28 @@ Inside the `json-logger-module` we will find the following JSON schemas:
     - loggerConfig.json
     - loggerProcessor.json
 ```
+
+As the names imply, `loggerConfig.json` is the schema that defines the attributes that will be configurable in the Connector's config. At the same time, `loggerProcessor.json` is the schema that defines the final attributed that will form the final JSON output in the log files.
+
+### Supported annotations per schema:
+
+Given both schemas serve different purposes, the supported devkit annotations are also different. Here is a description on the currently supported devkit annotations per schema type.
+
+#### loggerConfig.json
+
+```json
+"prettyPrint":{
+  "type":"boolean",
+  "devkit": {
+    "description": "Currently this field is mandatory so DON'T REMOVE",
+    "placement":"JSON Output",
+    "default": "true",
+    "isConfig": true
+  }
+}
+```
+With the exception of `"description"` all the attributes within devkit will map to an specific devkit annotation:  
+
+- `placement`: Indicates the placement of the attribute ([@Placement](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#placement-field-order-grouping-and-tabs))
+- `default`: String value or MEL expression assigned by default ([@Default](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#default-annotation))
+- `isConfig`: Boolean that indicates if this attribute should be part of the configurable attributes ([@Configurable](https://docs.mulesoft.com/anypoint-connector-devkit/v/3.8/defining-connector-attributes#configurable-annotation))
