@@ -8,7 +8,6 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 http://www.mulesoft.org/schema/mule/eli-logger http://www.mulesoft.org/schema/mule/eli-logger/current/mule-eli-logger.xsd
 http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-    <eli-logger:eli-mule-config name="ELILogger__Mule_Configuration" appId="123" type="someType" appName="appName" appVersion="appVersion" channel="appChannel" doc:name="ELILogger: Mule Configuration" showPayload="true"/>
     <json-logger:config name="JsonLoggerModule__Logger_Configuration" doc:name="JsonLoggerModule: Logger Configuration"/>
     <flow name="logger-test-appFlow">
         <poll doc:name="Poll">
