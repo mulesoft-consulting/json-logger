@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<mule-project xmlns="http://www.mulesoft.com/tooling/project" runtimeId="org.mule.tooling.server.3.8.4.ee" schemaVersion="5.3.0.0">
-    <name>logger-test-app</name>
-    <description></description>
-    <muleExtension name="ELILogger" qualifier="org.mule.tooling.ui.contribution.eli-logger.3.5.0"/>
-    <muleExtension name="JsonLoggerModule" qualifier="org.mule.tooling.ui.contribution.json-logger.3.5.0"/>
-</mule-project>

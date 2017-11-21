@@ -10,16 +10,12 @@
 
 
     <Appenders>
-        <RollingFile name="file" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}logger-test-app.log" 
-                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}logger-test-app-%i.log">
-            <PatternLayout pattern="%m%n" />
+        <RollingFile name="file" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}json-logger-test-app.log" 
+                 filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}json-logger-test-app-%i.log">
+            <PatternLayout pattern="%d [%t] %-5p %c - %m%n" />
             <SizeBasedTriggeringPolicy size="10 MB" />
             <DefaultRolloverStrategy max="10"/>
         </RollingFile>
-        
-        <Console name="JSON">
-            <PatternLayout pattern="%m%n"/>
-        </Console>
     </Appenders>
     <Loggers>
     	
@@ -46,10 +42,6 @@
         <!-- Reduce DM verbosity -->
         <AsyncLogger name="org.jetel" level="WARN"/>
         <AsyncLogger name="Tracking" level="WARN"/>
-        
-        <AsyncLogger name="org.mule.modules.jsonloggermodule.JsonLoggerModuleConnector" level="INFO" additivity="false">
-        	<AppenderRef ref="JSON"/>
-        </AsyncLogger>
         
         <AsyncRoot level="INFO">
             <AppenderRef ref="file" />

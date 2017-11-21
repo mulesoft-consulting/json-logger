@@ -12,7 +12,7 @@
          	"isConfig": true
          }
       },
-      "startTimestamp":{
+      "timestamp":{
          "type":"string",
          "devkit": {
          	"placement":"Default expressions",
@@ -20,27 +20,43 @@
          	"isConfig": true
          }
       },
-      "threadName":{
+      "rootCorrelationId":{
          "type":"string",
          "devkit": {
-         	"placement":"Default expressions",
-         	"default": "#[Thread.currentThread().getName()]",
-         	"isConfig": true
+			"placement":"Default expressions",
+         	"default": "#[(message.inboundProperties.'x-root-correlation-id' != null)?message.inboundProperties.'x-root-correlation-id':message.id]",
+			"isConfig": true
+         }
+      },
+      "correlationId":{
+         "type":"string",
+         "devkit": {
+			"placement":"Default expressions",
+         	"default": "#[message.id]",
+			"isConfig": true
          }
       },
       "applicationName":{
          "type":"string",
          "devkit": {
          	"placement":"Global",
-         	"default": "${json.logger.header.applicationname}",
+         	"default": "${json.logger.application.name}",
          	"isConfig": true
          }
       },
-      "source":{
+      "applicationVersion":{
          "type":"string",
          "devkit": {
          	"placement":"Global",
-         	"default": "${json.logger.header.source}",
+         	"default": "${json.logger.application.version}",
+         	"isConfig": true
+         }
+      },
+      "environment":{
+         "type":"string",
+         "devkit": {
+         	"placement":"Global",
+         	"default": "${mule.env}",
          	"isConfig": true
          }
       }
