@@ -15,11 +15,6 @@ For these reasons and based on previous customer experiences, I created this gen
 
 In a nutshell, by defining the output JSON schema as well as providing some additional DevKit specific details (e.g. default values, default expressions, etc.), we can dynamically generate a module that aligns to that schema.
 
-## Implementation details
-- `json-logger-module`: Core module was build using DevKit 3.9.0
-- `jsonschema2pojo`: This public Maven plugin allows for dynamic POJO generation based on a JSON Schema
-- `jsonschema2pojo-custom-devkitannotation`: In order to add DevKit specific annotations to the POJO generation, I created an extension of the jsonschema2pojo plugin. This extension is deployed to MuleSoft Services exchange repository so you no longer need to install it locally to build the module
-
 ## Installation from Exchange
 
 Starting with version `1.1.0`, the module has been published to our own MuleSoft Services exchange repository. Thus, the easiest way to install it (and use it as-is) would be through Exchange in Anypoint Studio.
@@ -279,12 +274,12 @@ Assuming you are a beloved customer, support should already have provided Mule E
 Lastly, replace your Anypoint Platform credentials here:
 ```xml
 <!-- Customer Exchange Repository -->
-	<server>
-		<id>Exchange2</id>
-		<!-- NOTE: In order to be able to publish assets to exchange, this user will need the Exchange Contributor Role -->
-		<username>ANYPOINT_PLATFORM_USER</username>
-		<password>ANYPOINT_PLATFORM_PASS</password>
-	</server>
+<server>
+	<id>Exchange2</id>
+	<!-- NOTE: In order to be able to publish assets to exchange, this user will need the Exchange Contributor Role -->
+	<username>ANYPOINT_PLATFORM_USER</username>
+	<password>ANYPOINT_PLATFORM_PASS</password>
+</server>
 ```
 
 ## <a name="dynamicMaven"></a>Access Maven values from property files
@@ -306,6 +301,11 @@ For the love of all things that are good and pure I was not able to tell Maven t
 json.logger.application.name=${project.artifactId}
 json.logger.application.version=${project.version}
 ```
+
+## Implementation details
+- `json-logger-module`: Core module was build using DevKit 3.9.0
+- `jsonschema2pojo`: This public Maven plugin allows for dynamic POJO generation based on a JSON Schema
+- `jsonschema2pojo-custom-devkitannotation`: In order to add DevKit specific annotations to the POJO generation, I created an extension of the jsonschema2pojo plugin. This extension is deployed to MuleSoft Services exchange repository so you no longer need to install it locally to build the module
 
 ## Author
 
