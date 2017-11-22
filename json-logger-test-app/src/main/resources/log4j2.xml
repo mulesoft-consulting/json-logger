@@ -12,10 +12,13 @@
     <Appenders>
         <RollingFile name="file" fileName="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}json-logger-test-app.log" 
                  filePattern="${sys:mule.home}${sys:file.separator}logs${sys:file.separator}json-logger-test-app-%i.log">
-            <PatternLayout pattern="%d [%t] %-5p %c - %m%n" />
+            <PatternLayout pattern="%m%n" />
             <SizeBasedTriggeringPolicy size="10 MB" />
             <DefaultRolloverStrategy max="10"/>
         </RollingFile>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+	      <PatternLayout pattern="%m%n"/>
+	    </Console>
     </Appenders>
     <Loggers>
     	
@@ -45,6 +48,7 @@
         
         <AsyncRoot level="INFO">
             <AppenderRef ref="file" />
+            <AppenderRef ref="STDOUT"/>
         </AsyncRoot>
     </Loggers>
 </Configuration>

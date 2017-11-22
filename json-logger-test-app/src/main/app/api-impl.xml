@@ -9,42 +9,42 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
     
     <sub-flow name="get:/log:api-impl">
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: Received">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: START">
             <json-logger:logger-json message="#[payload]"/>
         </json-logger:logger>
         <scripting:component doc:name="Mock: Backend Response">
             <scripting:script engine="Groovy"><![CDATA[Thread.sleep(200);
 return '{"message":"mocked backend response"}']]></scripting:script>
         </scripting:component>
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: Backend Response">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: AFTER_API_OR_BACKEND">
             <json-logger:logger-json tracePoint="AFTER_API_OR_BACKEND" message="#[payload]"/>
         </json-logger:logger>
         <set-payload value="#['{&quot;message&quot;:&quot;mocked data transformation&quot;}']" mimeType="application/json" doc:name="Mock: Data Transformation"/>
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: Final Response">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: END">
             <json-logger:logger-json tracePoint="END" message="#[payload]"/>
         </json-logger:logger>
     </sub-flow>
     <sub-flow name="get:/elapsedTimers:api-impl">
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: Received">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: START">
             <json-logger:logger-json message="#[payload]"/>
         </json-logger:logger>
         <set-payload value="#[['A','B','C']]" doc:name="Mock: Array"/>
         <foreach doc:name="For Each">
             <flow-ref name="mock-sub-process" doc:name="mock-sub-process"/>
         </foreach>
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: Final Response">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" doc:name="JSON: END">
             <json-logger:logger-json tracePoint="END" message="#[payload]"/>
         </json-logger:logger>
     </sub-flow>    
     <sub-flow name="mock-sub-process">
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" timerVariable="#[flowVars['innerTimerVariable'+flowVars.counter]]" doc:name="JSON: Inner Logger Start">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" timerVariable="#[flowVars['innerTimerVariable'+flowVars.counter]]" doc:name="JSON: BEFORE_API_OR_BACKEND">
             <json-logger:logger-json tracePoint="BEFORE_API_OR_BACKEND" message="#[payload]"/>
         </json-logger:logger>
         <scripting:component doc:name="Mock: Sub Process">
             <scripting:script engine="Groovy"><![CDATA[Thread.sleep(100);
 return '{"message":'+payload+'}']]></scripting:script>
         </scripting:component>
-        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" timerVariable="#[flowVars['innerTimerVariable'+flowVars.counter]]" doc:name="JSON: Inner Logger End">
+        <json-logger:logger config-ref="JSON_Logger__Logger_Configuration" timerVariable="#[flowVars['innerTimerVariable'+flowVars.counter]]" doc:name="JSON: AFTER_API_OR_BACKEND">
             <json-logger:logger-json tracePoint="AFTER_API_OR_BACKEND" message="#[payload]"/>
         </json-logger:logger>
     </sub-flow>
