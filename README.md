@@ -271,6 +271,14 @@ Assuming you are a beloved customer, support should already have provided Mule E
 	<password>CUSTOMER_EE_REPO_PASS</password>
 </server>
 ```
+Now lets add the Mulesoft Services Exchange repository credentials so that we can get the jsonschema2pojo-custom-devkitannotation dependency:
+```xml
+<server>
+	<id>Exchange2-MulesoftServices</id>
+	<username>guest-mule</username>
+	<password>Mulesoft1</password>
+</server>
+```
 Lastly, replace your Anypoint Platform credentials here:
 ```xml
 <!-- Customer Exchange Repository -->
