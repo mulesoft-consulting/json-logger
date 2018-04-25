@@ -33,7 +33,7 @@ pass: Mulesoft1
 Currently there are two configurations available for the JSON Logger Module.
 
 - `Logger Configuration`: Provides basic configuration for local generation of logs
-- `Logger with Anypoint MQ Configuration`: On to of the basic it also lets you configure an Anypoint MQ destination. This enables the connector to not only log the entries locally but also send them to Anypoint MQ asynchronously (if you must know, this feature uses [OkHttp3](https://github.com/square/okhttp) under the covers)
+- `Logger with Anypoint MQ Configuration`: On top of the basics it also lets you configure an Anypoint MQ destination. This enables the connector to not only log the entries locally but also send them to Anypoint MQ asynchronously (if you must know, this feature uses [OkHttp3](https://github.com/square/okhttp) under the covers)
 
 #### Default JSON structure
 
