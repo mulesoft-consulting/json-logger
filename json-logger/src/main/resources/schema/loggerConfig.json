@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition for fields globally defined in the logger config",
+  "type": "object",
+  "properties": {
+    "globalSettings": {
+      "type": "object",
+      "properties": {
+        "applicationName": {
+          "type": "string",
+          "sdk": {
+            "default": "${json.logger.application.name}"
+          }
+        },
+        "applicationVersion": {
+          "type": "string",
+          "sdk": {
+            "default": "${json.logger.application.version}"
+          }
+        },
+        "correlationId": {
+          "type": "string",
+          "sdk": {
+            "default": "#[correlationId]"
+          }
+        },
+        "environment": {
+          "type": "string",
+          "sdk": {
+            "default": "${mule.env}"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "sdk": {
+            "default": "#[now() >> (p('json.logger.timezone') default \"UTC\") as String {format: (p('json.logger.dateformat') default \"yyyy-MM-dd'T'HH:mm:ss.SSS\")}]"
+          }
+        }
+      },
+      "sdk": {
+        "parameterGroup": "Global Settings",
+        "expressionSupport": "NOT_SUPPORTED",
+        "placement": {
+          "order": 1
+        }
+      }
+    },
+    "jsonOutput": {
+      "type": "object",
+      "properties": {
+        "prettyPrint": {
+          "type": "boolean",
+          "javaType": "boolean",
+          "sdk": {
+            "summary": "Currently this field is mandatory so DON'T REMOVE",
+            "default": true,
+            "expressionSupport": "NOT_SUPPORTED"
+          }
+        },
+        "disablePayloadLogging": {
+          "type": "boolean",
+          "javaType": "boolean",
+          "sdk": {
+            "summary": "Currently this field is mandatory so DON'T REMOVE",
+            "default": false,
+            "expressionSupport": "NOT_SUPPORTED"
+          }
+        }
+      },
+      "sdk": {
+        "parameterGroup": "JSON Output",
+        "expressionSupport": "NOT_SUPPORTED"
+      }
+    }
+  }
+}

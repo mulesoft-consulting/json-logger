@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition for fields used in the logger message processor",
+  "type": "object",
+  "properties": {
+    "priority": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.pojos.Priority",
+      "enum": [
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR"
+      ],
+      "sdk": {
+        "default": "INFO",
+        "summary": "Logger priority"
+      }
+    },
+    "tracePoint": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.pojos.TracePoint",
+      "enum": [
+        "START",
+        "BEFORE_TRANSFORM",
+        "AFTER_TRANSFORM",
+        "BEFORE_REQUEST",
+        "AFTER_REQUEST",
+        "PROCESSING",
+        "END",
+        "EXCEPTION"
+      ],
+      "sdk": {
+        "default": "START",
+        "summary": "Current processing stage"
+      }
+    },
+    "message": {
+      "type": "string",
+      "sdk": {
+        "example": "Add a log entry",
+        "required": true,
+        "summary": "Message to be logged"
+      }
+    },
+    "logPayload": {
+      "type": "boolean",
+      "javaType": "boolean",
+      "sdk": {
+        "default": true,
+        "summary": "Mark if payload should be logged",
+        "displayName": "Should log payload?",
+        "expressionSupport": "NOT_SUPPORTED"
+      }
+    },
+    "logPayload": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "string",
+          "sdk": {
+            "default": "#[payload]"
+          }
+        }
+      },
+      "sdk": {
+        "summary": "Should log payload",
+        "required": false,
+        "expressionSupport": "NOT_SUPPORTED"
+      }
+    },
+    "logAttributes": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "string",
+          "sdk": {
+            "default": "#[attributes]"
+          }
+        }
+      },
+      "sdk": {
+        "summary": "Should log attributes",
+        "required": false,
+        "expressionSupport": "NOT_SUPPORTED"
+      }
+    }
+  }
+}
