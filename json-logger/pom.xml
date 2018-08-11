@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mule.extension.services</groupId>
     <artifactId>json-logger</artifactId>
-    <version>1.0.106-SNAPSHOT</version>
+    <version>1.0.169-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>Json-logger Extension</name>
 

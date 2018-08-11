@@ -11,6 +11,7 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import org.mule.api.annotations.param.Default;
 import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -84,6 +85,18 @@ public class CustomMuleAnnotator extends AbstractAnnotator {
                 String exampleValue = String.valueOf(sdkMap.get("example"));
                 System.out.println(">> Found example: " + exampleValue);
                 field.annotate(Example.class).param("value", exampleValue);
+            }
+            if (sdkMap.get("isContent") != null) {
+                System.out.println(">> Found isContent: " + String.valueOf(sdkMap.get("isContent")));
+                if (Boolean.TRUE.equals(sdkMap.get("isContent"))) {
+                    field.annotate(Content.class);
+                }
+            }
+            if (sdkMap.get("isPrimaryContent") != null) {
+                System.out.println(">> Found isPrimaryContent: " + String.valueOf(sdkMap.get("isPrimaryContent")));
+                if (Boolean.TRUE.equals(sdkMap.get("isPrimaryContent"))) {
+                    field.annotate(Content.class).param("primary", true);
+                }
             }
             if (sdkMap.get("expressionSupport") != null) {
                 String expressionSupportValue = String.valueOf(sdkMap.get("expressionSupport"));

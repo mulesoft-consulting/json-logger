@@ -45,6 +45,44 @@
         }
       }
     },
+    "nestedTest": {
+      "type": "object",
+      "properties": {
+        "field1": {
+          "type": "string",
+          "sdk": {
+            "default": "blah",
+            "expressionSupport": "NOT_SUPPORTED"
+          }
+        },
+        "obj1": {
+          "type": "object",
+          "properties": {
+            "child1": {
+              "type": "string",
+              "sdk": {
+                "default": "child1",
+                "expressionSupport": "NOT_SUPPORTED"
+              }
+            },
+            "child2": {
+              "type": "string",
+              "sdk": {
+                "default": "child2",
+                "expressionSupport": "NOT_SUPPORTED"
+              }
+            }
+          },
+          "sdk": {
+            "expressionSupport": "NOT_SUPPORTED"
+          }
+        }
+      },
+      "sdk": {
+        "parameterGroup": "Nested Test",
+        "expressionSupport": "NOT_SUPPORTED"
+      }
+    },
     "jsonOutput": {
       "type": "object",
       "properties": {
@@ -54,15 +92,6 @@
           "sdk": {
             "summary": "Currently this field is mandatory so DON'T REMOVE",
             "default": true,
-            "expressionSupport": "NOT_SUPPORTED"
-          }
-        },
-        "disablePayloadLogging": {
-          "type": "boolean",
-          "javaType": "boolean",
-          "sdk": {
-            "summary": "Currently this field is mandatory so DON'T REMOVE",
-            "default": false,
             "expressionSupport": "NOT_SUPPORTED"
           }
         }

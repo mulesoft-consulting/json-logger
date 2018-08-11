@@ -26,7 +26,7 @@
         "AFTER_TRANSFORM",
         "BEFORE_REQUEST",
         "AFTER_REQUEST",
-        "PROCESSING",
+        "FLOW",
         "END",
         "EXCEPTION"
       ],
@@ -43,46 +43,14 @@
         "summary": "Message to be logged"
       }
     },
-    "logPayload": {
-      "type": "boolean",
-      "javaType": "boolean",
+    "content": {
+      "type": "string",
+      "javaType": "org.mule.runtime.api.metadata.TypedValue<java.lang.Object>",
       "sdk": {
-        "default": true,
-        "summary": "Mark if payload should be logged",
-        "displayName": "Should log payload?",
-        "expressionSupport": "NOT_SUPPORTED"
-      }
-    },
-    "logPayload": {
-      "type": "object",
-      "properties": {
-        "payload": {
-          "type": "string",
-          "sdk": {
-            "default": "#[payload]"
-          }
-        }
-      },
-      "sdk": {
-        "summary": "Should log payload",
-        "required": false,
-        "expressionSupport": "NOT_SUPPORTED"
-      }
-    },
-    "logAttributes": {
-      "type": "object",
-      "properties": {
-        "attributes": {
-          "type": "string",
-          "sdk": {
-            "default": "#[attributes]"
-          }
-        }
-      },
-      "sdk": {
-        "summary": "Should log attributes",
-        "required": false,
-        "expressionSupport": "NOT_SUPPORTED"
+        "default": "#[output application/json ---\n{\n \tpayload: payload,\n \tattributes: attributes\n}]",
+        "summary": "Remove if no content should be logged",
+        "displayName": "Content default expression",
+        "isContent": true
       }
     }
   }
