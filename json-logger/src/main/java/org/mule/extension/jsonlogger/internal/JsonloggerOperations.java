@@ -13,7 +13,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.mule.extension.jsonlogger.pojos.GlobalSettings;
 import org.mule.extension.jsonlogger.pojos.LoggerProcessor;
+import org.mule.extension.jsonlogger.pojos.TestNested;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
@@ -105,6 +107,10 @@ public class JsonloggerOperations implements Initialisable {
 
             // Merge contents of loggerProcessor and globalSettings
             JsonNode nodeLoggerJson = om.valueToTree(loggerProcessor);
+//            GlobalSettings tempGS = config.getGlobalSettings();
+//            TestNested tn = new TestNested();
+//            tn.setFieldTest("some internal test");
+//            tempGS.setTestNested(tn);
             JsonNode nodeConfigJson = om.valueToTree(config.getGlobalSettings());
             ObjectNode mergedLogger = (ObjectNode) merge(nodeLoggerJson, nodeConfigJson);
 

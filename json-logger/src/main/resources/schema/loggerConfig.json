@@ -35,6 +35,21 @@
           "sdk": {
             "default": "#[now() >> (p('json.logger.timezone') default \"UTC\") as String {format: (p('json.logger.dateformat') default \"yyyy-MM-dd'T'HH:mm:ss.SSS\")}]"
           }
+        },
+        "testNested": {
+          "type": "object",
+          "properties": {
+            "fieldTest": {
+              "type": "string",
+              "sdk": {
+                "default": "fieldTest",
+                "expressionSupport": "NOT_SUPPORTED"
+              }
+            }
+          },
+          "sdk": {
+            "expressionSupport": "SUPPORTED"
+          }
         }
       },
       "sdk": {
@@ -43,44 +58,6 @@
         "placement": {
           "order": 1
         }
-      }
-    },
-    "nestedTest": {
-      "type": "object",
-      "properties": {
-        "field1": {
-          "type": "string",
-          "sdk": {
-            "default": "blah",
-            "expressionSupport": "NOT_SUPPORTED"
-          }
-        },
-        "obj1": {
-          "type": "object",
-          "properties": {
-            "child1": {
-              "type": "string",
-              "sdk": {
-                "default": "child1",
-                "expressionSupport": "NOT_SUPPORTED"
-              }
-            },
-            "child2": {
-              "type": "string",
-              "sdk": {
-                "default": "child2",
-                "expressionSupport": "NOT_SUPPORTED"
-              }
-            }
-          },
-          "sdk": {
-            "expressionSupport": "NOT_SUPPORTED"
-          }
-        }
-      },
-      "sdk": {
-        "parameterGroup": "Nested Test",
-        "expressionSupport": "NOT_SUPPORTED"
       }
     },
     "jsonOutput": {
