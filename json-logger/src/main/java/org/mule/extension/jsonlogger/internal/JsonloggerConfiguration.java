@@ -3,14 +3,9 @@ package org.mule.extension.jsonlogger.internal;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.mule.extension.jsonlogger.internal.util.GuavaCacheUtil;
-import org.mule.extension.jsonlogger.pojos.LoggerConfig;
+import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
 import org.mule.runtime.extension.api.annotation.Operations;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
-import org.mule.runtime.extension.api.runtime.operation.FlowListener;
-import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,20 +16,36 @@ import java.util.concurrent.TimeUnit;
 public class JsonloggerConfiguration extends LoggerConfig {
 
     // Cache methods
-    public Long getCachedTimerTimestamp(String key) throws ExecutionException {
-        LoadingCache<String, Long> cache = GuavaCacheUtil.getTimerCache();
-        //System.out.println(">>> Cache Stats:" +cache.stats());
-        //System.out.println(">>> Cache Size:" + cache.size());
-        //System.out.println(">>> Cache Map:" + cache.asMap());
+    public Long getCachedTimerTimestamp(String key) throws Exception {
+        LoadingCache<String, Long> cache = getTimerCache();
         return cache.get(key);
     }
 
-    public void invalidateTimerKey (String key) {
-        GuavaCacheUtil.invalidateTimerKey(key);
+    private static LoadingCache<String, Long> timerCache;
+
+    static {
+        timerCache = CacheBuilder.newBuilder()
+                .maximumSize(1000000)
+                .expireAfterAccess(3, TimeUnit.MINUTES)
+                .build(
+                        new CacheLoader<String, Long>() {
+                            @Override
+                            public Long load(String key) throws Exception {
+                                return System.currentTimeMillis();
+                            }
+                        }
+                );
     }
 
-    public void printTimerKeys () {
-        GuavaCacheUtil.printTimerKeys();
+    public static LoadingCache<String, Long> getTimerCache() {
+        return timerCache;
     }
 
+    public static void invalidateTimerKey (String key) {
+        timerCache.invalidate(key);
+    }
+
+    public static void printTimerKeys () {
+        System.out.println(timerCache.asMap());
+    }
 }

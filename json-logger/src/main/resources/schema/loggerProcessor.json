@@ -5,7 +5,7 @@
   "properties": {
     "priority": {
       "type": "string",
-      "javaType": "org.mule.extension.jsonlogger.pojos.Priority",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.Priority",
       "enum": [
         "DEBUG",
         "INFO",
@@ -19,7 +19,7 @@
     },
     "tracePoint": {
       "type": "string",
-      "javaType": "org.mule.extension.jsonlogger.pojos.TracePoint",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.TracePoint",
       "enum": [
         "START",
         "BEFORE_TRANSFORM",
@@ -49,8 +49,16 @@
       "sdk": {
         "default": "#[output application/json ---\n{\n \tpayload: payload,\n \tattributes: attributes\n}]",
         "summary": "Remove if no content should be logged",
-        "displayName": "Content default expression",
         "isContent": true
+      }
+    },
+    "correlationId": {
+      "type": "string",
+      "sdk": {
+        "default": "#[correlationId]",
+        "placement": {
+          "tab": "Advanced"
+        }
       }
     }
   }
