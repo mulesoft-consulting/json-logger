@@ -130,13 +130,13 @@ under the License.
       <passphrase>optional; leave empty if not used.</passphrase>
     </server>
     -->
-	
+
 	<!-- MuleSoft Nexus EE Repository -->
 	<server>
-	    <id>MuleRepository</id>
+		<id>MuleRepository</id>
 		<!-- Provided by Support -->
-	    <username>CUSTOMER_EE_REPO_USER</username>
-	    <password>CUSTOMER_EE_REPO_PASS</password>
+		<username>CUSTOMER_EE_REPO_USER</username>
+		<password>CUSTOMER_EE_REPO_PASS</password>
 	</server>
 	<!-- MuleSoft Services Exchange Repository -->
 	<server>
@@ -149,8 +149,8 @@ under the License.
 	<server>
 		<id>Exchange2</id>
 		<!-- NOTE: In order to be able to publish assets to exchange, this user will need Exchange Contributor Role -->
-		<username>ANYPOINT_PLATFORM_USER</username>
-		<password>ANYPOINT_PLATFORM_PASS</password>
+		<username>${exchange.user}</username>
+		<password>${exchange.password}</password>
 	</server>
   </servers>
 
