@@ -49,9 +49,9 @@
     <distributionManagement>
         <!-- Target Anypoint Organization Repository -->
         <repository>
-            <id>Exchange2</id>
+            <id>anypoint-ewb</id>
             <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/ORG_ID_TOKEN/maven</url>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/3682d16e-d636-48bc-9d5e-9c957e9addae/maven</url>
             <layout>default</layout>
         </repository>
     </distributionManagement>
@@ -71,7 +71,7 @@
     <pluginRepositories>
         <!-- Shared Mule Services Plugin Repository -->
         <pluginRepository>
-            <id>Exchange2-MulesoftServices</id>
+            <id>anypoint-ewb</id>
             <name>Exchange2 Repository</name>
             <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/3682d16e-d636-48bc-9d5e-9c957e9addae/maven</url>
             <layout>default</layout>
@@ -80,7 +80,7 @@
     <repositories>
         <!-- Shared Mule Services Repository -->
         <repository>
-            <id>Exchange2-MulesoftServices</id>
+            <id>anypoint-ewb</id>
             <name>Exchange2 Repository</name>
             <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/3682d16e-d636-48bc-9d5e-9c957e9addae/maven</url>
             <layout>default</layout>

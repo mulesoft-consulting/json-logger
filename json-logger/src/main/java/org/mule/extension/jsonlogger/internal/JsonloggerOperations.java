@@ -98,31 +98,23 @@ public class JsonloggerOperations implements Initialisable {
         // Load disabledFields
         List<String> disabledFields = (config.getJsonOutput().getDisabledFields() != null) ? Arrays.asList(config.getJsonOutput().getDisabledFields().split(",")) : new ArrayList<>();
         log.debug("The following fields will be disabled for logging: " + disabledFields);
-        jsonLogger.info("****************************************************************************************");
 
         // Logic to disable fields and/or parse TypedValues as String for JSON log printing
         Map<String, String> typedValuesAsString = new HashMap<>();
         try {
             PropertyUtils.describe(loggerProcessor).forEach((k, v) -> {
-                jsonLogger.info(">> for each " +k+" / "+v);
                 if (disabledFields.stream().anyMatch(k::equals)) {
-                    jsonLogger.info("disabled");
                     try {
                         BeanUtils.setProperty(loggerProcessor, k, null);
                     } catch (Exception e) {
                         log.error("Failed disabling field: " + k, e);
                     }
                 } else {
-                    jsonLogger.info("else");
                     if (v != null) {
                         try {
-                            jsonLogger.info("v is not null");
                             if(v instanceof ParameterResolver) {
-                                jsonLogger.info("resolving");
                                 v = ((ParameterResolver) v).resolve();
-                                jsonLogger.info("resolved: "+v.getClass());
                             }
-                            jsonLogger.info("class = "+v.getClass().getCanonicalName());
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                 log.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
                                 TypedValue<Object> typedVal = (TypedValue<Object>) v;
