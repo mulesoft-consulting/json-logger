@@ -140,6 +140,7 @@ public class JsonloggerOperations implements Initialisable {
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
+                            typedValuesAsString.put(k, "[invalidcontent]");
                         }
                     }
                 }
