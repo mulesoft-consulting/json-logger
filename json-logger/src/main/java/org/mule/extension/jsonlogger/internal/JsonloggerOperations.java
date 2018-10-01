@@ -24,11 +24,13 @@ import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
+import org.mule.runtime.extension.api.runtime.parameter.ParameterResolver;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -120,6 +122,23 @@ public class JsonloggerOperations implements Initialisable {
                                 BeanUtils.setProperty(loggerProcessor, k, null);
 
                                 typedValuesAsString.put(k, stringifiedVal);
+                            } else if(v.getClass().getCanonicalName().equals("org.mule.runtime.extension.api.runtime.parameter.ParameterResolver")) {
+                                try {
+                                    ParameterResolver<Object> parameterResolver = (ParameterResolver<Object>) v;
+                                    Object resolvedObj = parameterResolver.resolve();
+                                    String stringifiedVal;
+                                    if (resolvedObj.getClass().getSimpleName().equals("String")) {
+                                        stringifiedVal = (String) resolvedObj;
+                                    } else {
+                                        // TODO support more class types to have equivalent of TypedValue
+                                        stringifiedVal = resolvedObj.toString();
+                                    }
+                                    BeanUtils.setProperty(loggerProcessor, k, null);
+                                    typedValuesAsString.put(k, stringifiedVal);
+                                } catch (IllegalAccessException e) {
+                                    BeanUtils.setProperty(loggerProcessor, k, null);
+                                    typedValuesAsString.put(k, "[invalid-payload]");
+                                }
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
