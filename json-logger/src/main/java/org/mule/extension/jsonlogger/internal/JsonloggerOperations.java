@@ -18,18 +18,23 @@ import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.api.streaming.bytes.CursorStream;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.core.api.el.ExpressionManager;
+import org.mule.runtime.core.internal.streaming.ManagedCursorProvider;
+import org.mule.runtime.core.internal.streaming.bytes.ManagedCursorStreamProvider;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 import org.mule.runtime.extension.api.runtime.parameter.ParameterResolver;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
+import org.mule.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -93,20 +98,31 @@ public class JsonloggerOperations implements Initialisable {
         // Load disabledFields
         List<String> disabledFields = (config.getJsonOutput().getDisabledFields() != null) ? Arrays.asList(config.getJsonOutput().getDisabledFields().split(",")) : new ArrayList<>();
         log.debug("The following fields will be disabled for logging: " + disabledFields);
+        jsonLogger.info("****************************************************************************************");
 
         // Logic to disable fields and/or parse TypedValues as String for JSON log printing
         Map<String, String> typedValuesAsString = new HashMap<>();
         try {
             PropertyUtils.describe(loggerProcessor).forEach((k, v) -> {
+                jsonLogger.info(">> for each " +k+" / "+v);
                 if (disabledFields.stream().anyMatch(k::equals)) {
+                    jsonLogger.info("disabled");
                     try {
                         BeanUtils.setProperty(loggerProcessor, k, null);
                     } catch (Exception e) {
                         log.error("Failed disabling field: " + k, e);
                     }
                 } else {
+                    jsonLogger.info("else");
                     if (v != null) {
                         try {
+                            jsonLogger.info("v is not null");
+                            if(v instanceof ParameterResolver) {
+                                jsonLogger.info("resolving");
+                                v = ((ParameterResolver) v).resolve();
+                                jsonLogger.info("resolved: "+v.getClass());
+                            }
+                            jsonLogger.info("class = "+v.getClass().getCanonicalName());
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                 log.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
                                 TypedValue<Object> typedVal = (TypedValue<Object>) v;
@@ -120,25 +136,7 @@ public class JsonloggerOperations implements Initialisable {
                                     stringifiedVal = (String) transformationService.transform(originalVal, dataType, JSON_STRING);
                                 }
                                 BeanUtils.setProperty(loggerProcessor, k, null);
-
                                 typedValuesAsString.put(k, stringifiedVal);
-                            } else if(v.getClass().getCanonicalName().equals("org.mule.runtime.extension.api.runtime.parameter.ParameterResolver")) {
-                                try {
-                                    ParameterResolver<Object> parameterResolver = (ParameterResolver<Object>) v;
-                                    Object resolvedObj = parameterResolver.resolve();
-                                    String stringifiedVal;
-                                    if (resolvedObj.getClass().getSimpleName().equals("String")) {
-                                        stringifiedVal = (String) resolvedObj;
-                                    } else {
-                                        // TODO support more class types to have equivalent of TypedValue
-                                        stringifiedVal = resolvedObj.toString();
-                                    }
-                                    BeanUtils.setProperty(loggerProcessor, k, null);
-                                    typedValuesAsString.put(k, stringifiedVal);
-                                } catch (IllegalAccessException e) {
-                                    BeanUtils.setProperty(loggerProcessor, k, null);
-                                    typedValuesAsString.put(k, "[invalid-payload]");
-                                }
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
