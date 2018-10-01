@@ -18,17 +18,24 @@ import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.api.streaming.bytes.CursorStream;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.core.api.el.ExpressionManager;
+import org.mule.runtime.core.internal.streaming.ManagedCursorProvider;
+import org.mule.runtime.core.internal.streaming.bytes.ManagedCursorStreamProvider;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
+import org.mule.runtime.extension.api.runtime.parameter.ParameterResolver;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
+import org.mule.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -105,6 +112,9 @@ public class JsonloggerOperations implements Initialisable {
                 } else {
                     if (v != null) {
                         try {
+                            if(v instanceof ParameterResolver) {
+                                v = ((ParameterResolver) v).resolve();
+                            }
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                 log.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
                                 TypedValue<Object> typedVal = (TypedValue<Object>) v;
@@ -118,11 +128,11 @@ public class JsonloggerOperations implements Initialisable {
                                     stringifiedVal = (String) transformationService.transform(originalVal, dataType, JSON_STRING);
                                 }
                                 BeanUtils.setProperty(loggerProcessor, k, null);
-
                                 typedValuesAsString.put(k, stringifiedVal);
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
+                            typedValuesAsString.put(k, "[invalidcontent]");
                         }
                     }
                 }

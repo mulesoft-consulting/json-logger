@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<!-- <groupId>org.mule.custom.devkit.utils</groupId> -->
-	<groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
+	<groupId>3682d16e-d636-48bc-9d5e-9c957e9addae</groupId>
 	<artifactId>jsonschema2pojo-mule-annotations</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>jsonschema2pojo - Mule Annotations Extension</name>
 	<description>Support for both Mule (3.x) DevKit and Mule (4.x) Java SDK</description>
 
@@ -66,9 +66,9 @@
 	
 	<distributionManagement>
 		<repository>
-			<id>Exchange2-MulesoftServices</id>
+			<id>anypoint-ewb</id>
 			<name>Exchange2 Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${groupId}/maven</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v1/organizations/3682d16e-d636-48bc-9d5e-9c957e9addae/maven</url>
 			<layout>default</layout>
 		</repository>
 	</distributionManagement>
