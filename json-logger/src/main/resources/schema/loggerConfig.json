@@ -24,19 +24,6 @@
             "default": "${mule.env}"
           }
         }
-//      ,
-//        "correlationId": {
-//          "type": "string",
-//          "sdk": {
-//            "default": "#[correlationId]"
-//          }
-//        },
-//        "timestamp": {
-//          "type": "string",
-//          "sdk": {
-//            "default": "#[now() >> (p('json.logger.timezone') default \"UTC\") as String {format: (p('json.logger.dateformat') default \"yyyy-MM-dd'T'HH:mm:ss.SSS\")}]"
-//          }
-//        }
       },
       "sdk": {
         "parameterGroup": "Global Settings",

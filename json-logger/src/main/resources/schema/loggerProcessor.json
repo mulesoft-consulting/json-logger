@@ -8,6 +8,7 @@
       "javaType": "org.mule.extension.jsonlogger.api.pojos.Priority",
       "enum": [
         "DEBUG",
+        "TRACE",
         "INFO",
         "WARN",
         "ERROR"
@@ -45,7 +46,7 @@
     },
     "content": {
       "type": "string",
-      "javaType": "org.mule.runtime.api.metadata.TypedValue<java.lang.Object>",
+      "javaType": "org.mule.runtime.extension.api.runtime.parameter.ParameterResolver<org.mule.runtime.api.metadata.TypedValue<Object>>",
       "sdk": {
         "default": "#[output application/json ---\n{\n \tpayload: payload,\n \tattributes: attributes\n}]",
         "summary": "Remove if no content should be logged",

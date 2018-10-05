@@ -24,6 +24,7 @@ import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
+import org.mule.runtime.extension.api.runtime.parameter.ParameterResolver;
 import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +106,9 @@ public class JsonloggerOperations implements Initialisable {
                 } else {
                     if (v != null) {
                         try {
+                            if(v instanceof ParameterResolver) {
+                                v = ((ParameterResolver) v).resolve();
+                            }
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                 log.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
                                 TypedValue<Object> typedVal = (TypedValue<Object>) v;
@@ -123,6 +127,7 @@ public class JsonloggerOperations implements Initialisable {
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
+                            typedValuesAsString.put(k, "Error parsing expression. See logs for details.");
                         }
                     }
                 }
