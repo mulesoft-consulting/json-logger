@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+
+	<Appenders>
+		<!-- CloudHub Logging configuration -->
+		<Log4J2CloudhubLogAppender name="CLOUDHUB"
+			addressProvider="com.mulesoft.ch.logging.DefaultAggregatorAddressProvider"
+			applicationContext="com.mulesoft.ch.logging.DefaultApplicationContext"
+			appendRetryIntervalMs="${sys:logging.appendRetryInterval}"
+			appendMaxAttempts="${sys:logging.appendMaxAttempts}"
+			batchSendIntervalMs="${sys:logging.batchSendInterval}"
+			batchMaxRecords="${sys:logging.batchMaxRecords}" memBufferMaxSize="${sys:logging.memBufferMaxSize}"
+			journalMaxWriteBatchSize="${sys:logging.journalMaxBatchSize}"
+			journalMaxFileSize="${sys:logging.journalMaxFileSize}"
+			clientMaxPacketSize="${sys:logging.clientMaxPacketSize}"
+			clientConnectTimeoutMs="${sys:logging.clientConnectTimeout}"
+			clientSocketTimeoutMs="${sys:logging.clientSocketTimeout}"
+			serverAddressPollIntervalMs="${sys:logging.serverAddressPollInterval}"
+			serverHeartbeatSendIntervalMs="${sys:logging.serverHeartbeatSendIntervalMs}"
+			statisticsPrintIntervalMs="${sys:logging.statisticsPrintIntervalMs}">
+			<PatternLayout pattern="[%d{MM-dd HH:mm:ss}] %-5p %c{1} [%t]: %m%n" />
+		</Log4J2CloudhubLogAppender>
+
+		<!-- Splunk HTTP event collector configuration for multiple environments. 
+			It determines the configuration based on the environmnet variable. -->
+		<Http name="Splunk" url="${sys:splunk.server}/services/collector/raw"
+			method="POST">
+			<PatternLayout pattern="%m" />
+			<Property name="Authorization" value="Splunk YOUR_SPLUNK_TOKEN" />
+		</Http>
+	</Appenders>
+	<Loggers>
+
+		<!-- Http Logger shows wire traffic on DEBUG. -->
+		<!--AsyncLogger name="org.mule.service.http.impl.service.HttpMessageLogger" level="DEBUG" / -->
+		<AsyncLogger name="org.mule.service.http" level="WARN" />
+		<AsyncLogger name="org.mule.extension.http" level="WARN" />
+
+		<!-- Mule classes -->
+		<AsyncLogger name="org.mule" level="INFO" />
+		<AsyncLogger name="com.mulesoft" level="INFO" />
+
+		<AsyncRoot level="INFO">
+			<AppenderRef ref="CLOUDHUB" />
+			<AppenderRef ref="Splunk" />
+		</AsyncRoot>
+	</Loggers>
+</Configuration>

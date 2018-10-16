@@ -1,0 +1,151 @@
+<form>
+  <label>API Dashboard</label>
+  <fieldset submitButton="true" autoRun="true">
+    <input type="dropdown" searchWhenChanged="false" token="env">
+      <label>Environments</label>
+      <choice value="dev">Development</choice>
+      <choice value="test">Test</choice>
+      <choice value="prod">Production</choice>
+      <default>dev</default>
+      <initialValue>dev</initialValue>
+    </input>
+    <input type="time" token="timestamp">
+      <label>Time Frame</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>API Calls by Resource</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=END | 
+regex locationInfo.rootContainer="\b(get|post|put|patch|delete)\b" |
+eval appPrefix=substr(applicationName,1,3)  | 
+eval appType = coalesce( case(appPrefix = "sys", "System API", appPrefix = "pro", "Process API", appPrefix = "exp", "Experience API"), "Unknown") |
+stats count(correlationId), avg(elapsed) BY appType, applicationName, locationInfo.rootContainer |
+rename applicationName AS "API Name", locationInfo.rootContainer AS "API Resource", count(correlationId) AS "# Messages", avg(elapsed) AS "Average response time", appType AS "API Type"</query>
+          <earliest>$timestamp.earliest$</earliest>
+          <latest>$timestamp.latest$</latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">10</option>
+        <format type="number" field="Average response time">
+          <option name="unit">ms</option>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Recent 5 Successful Transactions</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=START | 
+join correlationId, applicationName [search host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=END] | 
+head 5 | 
+sort - timestamp |
+table timestamp applicationName correlationId elapsed | 
+rename applicationName AS "API Name", elapsed AS "Elapsed Time", correlationId AS "Correlation Id", timestamp AS "Timestamp"</query>
+          <earliest>$timestamp.earliest$</earliest>
+          <latest>$timestamp.latest$</latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">10</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="number" field="Elapsed Time">
+          <option name="precision">0</option>
+          <option name="unit">ms</option>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Recent 5 Failed Transactions</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ (tracePoint=EXCEPTION OR priority=ERROR) |
+head 5 | 
+sort - timestamp |
+table timestamp applicationName correlationId | 
+rename applicationName AS "API Name", elapsed AS "Elapsed Time", correlationId AS "Correlation Id"</query>
+          <earliest>$timestamp.earliest$</earliest>
+          <latest>$timestamp.latest$</latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">10</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Unique Messages Received</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=START | stats count(correlationId) by applicationName | rename applicationName AS "API Name", count(correlationId) AS "# Messages"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">10</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Number of Successful Calls</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=END | stats count(correlationId) by applicationName | rename applicationName AS "API Name", count(correlationId) AS "# Messages"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Number of Errors</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ (tracePoint=EXCEPTION OR priority=ERROR) | stats count(correlationId) by applicationName | rename applicationName AS "API Name", count(correlationId) AS "# Messages"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>All API Transactions</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=END | 
+join type=left applicationName, correlationId [search host="splunk-json-logger.localtunnel.me" environment=$env$ tracePoint=END] | 
+sort - timestamp |
+table timestamp, applicationName correlationId elapsed | 
+rename applicationName AS "API Name", correlationId AS "Correlation Id", elapsed AS "Elapsed Time", timestamp AS "Timestamp"</query>
+          <earliest>$timestamp.earliest$</earliest>
+          <latest>$timestamp.latest$</latest>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="count">10</option>
+        <format type="number" field="Elapsed Time">
+          <option name="precision">0</option>
+          <option name="unit">ms</option>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>
