@@ -1,0 +1,18 @@
+<dashboard>
+  <label>API charts</label>
+  <row>
+    <panel>
+      <title>Completed Transactions per API</title>
+      <chart>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=dev tracePoint=END | timechart span=1m count by applicationName</query>
+          <earliest>-1d@d</earliest>
+          <latest>@d</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>

@@ -1,0 +1,40 @@
+<form>
+  <label>Record Trace</label>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="text" token="correlationId" searchWhenChanged="false">
+      <label>Correlation Id</label>
+    </input>
+    <input type="dropdown" searchWhenChanged="false" token="env">
+      <label>Environments</label>
+      <choice value="dev">Development</choice>
+      <choice value="test">Test</choice>
+      <choice value="prod">Production</choice>
+      <default>dev</default>
+      <initialValue>dev</initialValue>
+    </input>
+    <input type="time" token="timestamp">
+      <label>Time Frame</label>
+      <default>
+        <earliest>@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <title>Record Trace</title>
+        <search>
+          <query>host="splunk-json-logger.localtunnel.me" environment=$env$  correlationId=$correlationId$ | sort by timestamp | fields - _* | fields +  priority applicationName applicationVersion message tracePoint elapsed</query>
+          <earliest>$timestamp.earliest$</earliest>
+          <latest>$timestamp.latest$</latest>
+        </search>
+        <option name="count">100</option>
+        <option name="drilldown">row</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
