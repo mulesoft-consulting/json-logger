@@ -3,13 +3,10 @@ package org.mule.custom.annotation.utils;
 import java.util.Map;
 
 import org.jsonschema2pojo.AbstractAnnotator;
-import org.mule.api.annotations.Configurable;
-import org.mule.api.annotations.Ignore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
-import org.mule.api.annotations.param.Default;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -23,7 +20,7 @@ import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import static org.mule.runtime.api.meta.ExpressionSupport.*;
 
 /**
- * Custom Devkit Annotator
+ * Custom Mule SDK Annotator
  *
  */
 public class CustomMuleAnnotator extends AbstractAnnotator {
@@ -33,42 +30,18 @@ public class CustomMuleAnnotator extends AbstractAnnotator {
 
 	    ObjectMapper mapper = new ObjectMapper();
 	    Map<String, Object> jsonMap = mapper.convertValue(propertyNode, Map.class);
-	    Map<String, Object> devkitMap = (Map<String, Object>) jsonMap.get("devkit");
 		Map<String, Object> sdkMap = (Map<String, Object>) jsonMap.get("sdk");
-
-	    if (devkitMap != null) {
-			System.out.println(">> devkitMap: " + devkitMap);
-
-	    	if (devkitMap.get("placement") != null) {
-		    	String placement = String.valueOf(devkitMap.get("placement"));
-		    	field.annotate(org.mule.api.annotations.display.Placement.class).param("group", placement);
-	    	}
-	    	
-	    	String defaultValue = String.valueOf(devkitMap.get("default"));
-	    	field.annotate(Default.class).param("value", defaultValue);
-	    	
-	    	if (Boolean.TRUE.equals(devkitMap.get("isConfig"))) 
-	    		field.annotate(Configurable.class);
-	    	
-	    	if (Boolean.TRUE.equals(devkitMap.get("isHidden")))
-		    	field.annotate(Ignore.class);
-	    }
 
 		if (sdkMap != null) {
 			System.out.println(">> sdkMap: " + sdkMap);
 
-			//TODO: Evaluate this for the config
-//			if (sdkMap.get("placement") != null) {
-//				String placement = (String) sdkMap.get("placement");
-//				field.annotate(Placement.class).param("group", placement);
-//			}
 			field.annotate(Parameter.class);
             if (sdkMap.get("default") != null) {
                 String defaultValue = String.valueOf(sdkMap.get("default"));
                 System.out.println(">> Found default: " + defaultValue);
                 field.annotate(Optional.class).param("defaultValue", defaultValue);
             } else if (sdkMap.get("required") != null && Boolean.FALSE.equals(sdkMap.get("required"))){
-                System.out.println(">> Field is required");
+                System.out.println(">> Field is not required");
                 field.annotate(Optional.class);
             }
             if (sdkMap.get("displayName") != null) {

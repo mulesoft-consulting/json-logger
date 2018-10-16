@@ -19,12 +19,22 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
+            <plugin>
                 <groupId>org.jsonschema2pojo</groupId>
                 <artifactId>jsonschema2pojo-maven-plugin</artifactId>
                 <version>0.4.35</version>
                 <dependencies>
                     <dependency>
-                        <groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
+                        <groupId>${project.groupId}</groupId>
                         <artifactId>jsonschema2pojo-mule-annotations</artifactId>
                         <version>1.0.0</version>
                     </dependency>
@@ -51,7 +61,7 @@
         <repository>
             <id>Exchange2</id>
             <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/ORG_ID_TOKEN/maven</url>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
             <layout>default</layout>
         </repository>
     </distributionManagement>
@@ -63,7 +73,7 @@
             <version>0.4.35</version>
         </dependency>
         <dependency>
-            <groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>jsonschema2pojo-mule-annotations</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -71,18 +81,18 @@
     <pluginRepositories>
         <!-- Shared Mule Services Plugin Repository -->
         <pluginRepository>
-            <id>Exchange2-MulesoftServices</id>
+            <id>Exchange2</id>
             <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/cc568b69-a181-4d4c-b044-90054c52897b/maven</url>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
             <layout>default</layout>
         </pluginRepository>
     </pluginRepositories>
     <repositories>
         <!-- Shared Mule Services Repository -->
         <repository>
-            <id>Exchange2-MulesoftServices</id>
+            <id>Exchange2</id>
             <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/cc568b69-a181-4d4c-b044-90054c52897b/maven</url>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
             <layout>default</layout>
         </repository>
     </repositories>

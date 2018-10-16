@@ -138,19 +138,12 @@ under the License.
 		<username>CUSTOMER_EE_REPO_USER</username>
 		<password>CUSTOMER_EE_REPO_PASS</password>
 	</server>
-	<!-- MuleSoft Services Exchange Repository -->
-	<server>
-		<!-- Default guest user -->
-		<id>Exchange2-MulesoftServices</id>
-		<username>guest-mule</username>
-		<password>Mulesoft1</password>
-	</server>
 	<!-- Customer Exchange Repository -->
 	<server>
 		<id>Exchange2</id>
 		<!-- NOTE: In order to be able to publish assets to exchange, this user will need Exchange Contributor Role -->
-		<username>${exchange.user}</username>
-		<password>${exchange.password}</password>
+		<username>ANYPOINT_PLATFORM_USER</username>
+		<password>ANYPOINT_PLATFORM_PASS</password>
 	</server>
   </servers>
 
