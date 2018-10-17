@@ -1,4 +1,4 @@
-# JSON Logger
+# JSON Logger - Mule 4
 
 Drop-in replacement for default Mule Logger that outputs a JSON structure based on a predefined JSON schema.
 
@@ -17,7 +17,7 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 ## Installation from Exchange
 
-Starting with version `1.1.0`, the module has been published to our own MuleSoft Services exchange repository. Thus, the easiest way to install it (and use it as-is) would be through Exchange in Anypoint Studio.
+This connector has been published to our own MuleSoft Services exchange repository. Thus, the easiest way to give it a try would be through Exchange in Anypoint Studio.
 
 The following guest user has been provisioned so that anyone can access and download the module from Exchange:
 
@@ -33,7 +33,7 @@ pass: Mulesoft1
 Currently there are two configurations available for the JSON Logger Module.
 
 - `Logger Configuration`: Provides basic configuration for local generation of logs
-- `Logger with Anypoint MQ Configuration`: On top of the basics it also lets you configure an Anypoint MQ destination. This enables the connector to not only log the entries locally but also send them to Anypoint MQ asynchronously (if you must know, this feature uses [OkHttp3](https://github.com/square/okhttp) under the covers)
+- `Logger with Anypoint MQ Configuration`: WIP
 
 #### Default JSON structure
 
