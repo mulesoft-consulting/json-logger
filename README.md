@@ -39,44 +39,44 @@ Currently there are two configurations available for the JSON Logger Module.
 
 The following is a brief explanation of the properties configured in the default JSON Logger out-of-the-box:
 ```yaml
-applicationName:
+applicationName: (defined in loggerConfig.json)
   - Description: Current application name
   - Default expression: ${json.logger.application.name}
-applicationVersion:
+applicationVersion: (defined in loggerConfig.json)
   - Description: Current application version
   - Default expression: ${json.logger.application.version}
-environment:
+environment: (defined in loggerConfig.json)
   - Description: Current environment
   - Default expression: ${mule.env}
-timestamp:
+timestamp: (calculated internally)
   - Description: Current timestamp with a configurable time zone and date format (thus the crazy weird expression)
-  - Default expression: #[new org.joda.time.DateTime().withZone(org.joda.time.DateTimeZone.forID(\"${json.logger.timezone}\")).toString(\"${json.logger.dateformat}\")]
-    - Additional dependencies:
-        - ${json.logger.timezone}: Time zone (e.g. US/Eastern)
-        - ${json.logger.dateformat}: Date format (e.g. yyyy-MM-dd HH:mm:ss.SSS)
-rootCorrelationId:
-  - Description: Global cross-application correlation Id to trace transaction end-to-end. By default it assumes the x-root-correlation-id header will be received but if not, it will default to the current #[message.id]
-  - Default expression: #[(message.inboundProperties.'x-root-correlation-id' != null)?message.inboundProperties.'x-root-correlation-id':message.id]
+  - Defaults to UTC and ISO format but can be altered by providing the following environment variables:
+    - ${json.logger.timezone}: Time zone (e.g. US/Eastern) > Refer to https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for valid timezones
+    - ${json.logger.dateformat}: Date format (e.g. yyyy-MM-dd HH:mm:ss.SSS)
+  - Mandatory: true
 correlationId:
   - Description: Local correlation Id to trace a transaction within the current application
-  - Default expression: #[message.id]
-threadName:
+  - Default expression: #[correlationId]
+threadName: (calculated internally)
   - Description: Current executing Thread
   - Default value: Calculated internally
   - Mandatory: true
-elapsed:
+elapsed: (calculated internally)
   - Description: Elapsed time
   - Default value: Calculated internally
   - Mandatory: true
 priority:
   - Description: Defines the priority for the log entry
-  - Default enum: DEBUG, INFO (default), WARN, ERROR
+  - Default enum: DEBUG, TRACE, INFO (default), WARN, ERROR
   - Mandatory: true
 tracePoint:
   - Description: Identifies the different checkpoints within a flow
-  - Default enum: START, BEFORE TRANSFORM, AFTER TRANSFORM, BEFORE API OR BACKEND, AFTER API OR BACKEND, END, EXCEPTION
+  - Default enum: "START", "BEFORE_TRANSFORM", "AFTER_TRANSFORM", "BEFORE_REQUEST", "AFTER_REQUEST", "FLOW", "END", "EXCEPTION"
 message:
   - Description: Message that developer wants to log
+  - Default expression: none (could be hardcoded value or MEL expression)
+content:
+  - Description: Raw content mostly for troubleshooting purposes
   - Default expression: none (could be hardcoded value or MEL expression)
 ```
 **NOTE:** There are some properties that currently are mandatory. Removing them will break the module's code.
