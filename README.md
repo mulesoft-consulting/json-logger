@@ -17,7 +17,7 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 ## Installation
 
-Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-mule-4/
+Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
 
 ## Author
 
