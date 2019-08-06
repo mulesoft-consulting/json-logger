@@ -59,6 +59,7 @@ public class JsonloggerOperations implements Initialisable {
     /**
      * Log a new entry
      */
+    // TODO: Add another operation that is BLOCKING
     public void logger(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessor loggerProcessor,
                        CorrelationInfo correlationInfo,
                        ComponentLocation location,
