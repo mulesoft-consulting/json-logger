@@ -1,11 +1,9 @@
 #!/bin/bash
 
 # This script requires the following 3 arguments in the following order:
-# 1. Anypoint Platform username
-# 2. Anypoint Platform password
-# 3. Anypoint Platform orgId
+# 1. Anypoint Platform orgId
 # Command should be called as follows:
-# ./deploy.sh myUser myPass some-org-id-value
+# ./deploy.sh some-org-id-value
 
 if [ "$#" -ne 1 ]
 then
