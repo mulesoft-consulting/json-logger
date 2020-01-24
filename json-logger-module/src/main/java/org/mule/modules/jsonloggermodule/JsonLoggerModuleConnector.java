@@ -144,13 +144,18 @@ public class JsonLoggerModuleConnector {
 		}
 		
 		/* Note: 
-		 * This was added because when the payload before the JSON Logger is of type ByteArraySeekableStream
+		 * This was added because when the payload before the JSON Logger is of type ByteArraySeekableStream or ByteArrayInputStream
 		 * (e.g. standard DW output object) and we pass #[payload] as the Message expression, then the stream 
 		 * gets consumed but not reset which translates to an "empty stream" for the next processor.  
 		 */
-		if (event.getMessage().getPayload().getClass().getSimpleName().equals("ByteArraySeekableStream")) {
+		String payloadClass = event.getMessage().getPayload().getClass().getSimpleName();
+
+		if (payloadClass.equals("ByteArraySeekableStream")) {
 			log.debug("Payload is a ByteArraySeekableStream. Preemptively resetting the stream...");
 			expressionManager.parse("#[payload.seek(0);]", event);
+		} else if (payloadClass.equals("ByteArrayInputStream")) {
+			log.debug("Payload is a ByteArrayInputStream. Preemptively resetting the stream...");
+			expressionManager.parse("#[payload.reset();]", event);
 		}
     }
     
