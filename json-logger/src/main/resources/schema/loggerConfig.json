@@ -23,6 +23,44 @@
           "sdk": {
             "default": "${mule.env}"
           }
+        },
+        "encryptPayload": {
+          "type": "boolean",
+          "javaType": "boolean",
+          "sdk": {
+            "default": false,
+            "summary": "Encrypt the payload for logging or not"
+          }
+        },
+        "secretKey": {
+          "type": "string",
+          "sdk": {
+            "default": "${json.logger.application.secretKey}",
+            "summary": "Encryption key",
+            "options": {
+              "dependencies": [
+                {
+                  "id": "encryptPayload",
+                  "value": true
+                }
+              ]
+            }
+          }
+        },
+        "encryptionSalt": {
+          "type": "string",
+          "sdk": {
+            "default": "${json.logger.application.encryptionSalt}",
+            "summary": "Encryption Salt",
+            "options": {
+              "dependencies": [
+                {
+                  "id": "encryptPayload",
+                  "value": true
+                }
+              ]
+            }
+          }
         }
       },
       "sdk": {

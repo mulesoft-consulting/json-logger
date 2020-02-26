@@ -19,6 +19,69 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
 
+## Sample Usage
+
+Two configs should be created per project to do both encrypted logging as well as plain-text
+logging.
+
+### JSON Logger Config for Encrypted Logging
+
+The encryption mechanism uses AES256.
+
+```
+<json-logger:config
+		name="JSON_Logger_Config_Encrypt" doc:name="JSON Logger Config"
+		disabledFields="${json.logger.application.disabledFields}"
+		applicationName="${json.logger.application.name}"
+		applicationVersion="${json.logger.application.version}"
+		environment="${mule.env}"
+		encryptPayload="true"
+		secretKey="${json.logger.application.secretKey}"
+		encryptionSalt="${json.logger.application.encryptionSalt}" />
+```
+
+OR
+
+```
+<json-logger:config
+		name="JSON_Logger_Config_Encrypt" doc:name="JSON Logger Config"
+		disabledFields="${json.logger.application.disabledFields}"
+		applicationName="${json.logger.application.name}"
+		applicationVersion="${json.logger.application.version}"
+		environment="${mule.env}"
+		encryptPayload="true"
+		secretKey="${secure::json.logger.application.secretKey}"
+		encryptionSalt="${secure::json.logger.application.encryptionSalt}" />
+```
+
+### JSON Logger Config for Plain-Text Logging
+
+```
+<json-logger:config
+		name="JSON_Logger_Config_PlainTextt" doc:name="JSON Logger Config"
+		disabledFields="${json.logger.application.disabledFields}"
+		applicationName="${json.logger.application.name}"
+		applicationVersion="${json.logger.application.version}"
+		environment="${mule.env}"
+		encryptPayload="false"
+		secretKey="${json.logger.application.secretKey}"
+		encryptionSalt="${json.logger.application.encryptionSalt}" />
+```
+
+OR
+
+```
+<json-logger:config
+		name="JSON_Logger_Config_PlainTextt" doc:name="JSON Logger Config"
+		disabledFields="${json.logger.application.disabledFields}"
+		applicationName="${json.logger.application.name}"
+		applicationVersion="${json.logger.application.version}"
+		environment="${mule.env}"
+		encryptPayload="false"
+		secretKey="${secure::json.logger.application.secretKey}"
+		encryptionSalt="${secure::json.logger.application.encryptionSalt}" />
+```
+
 ## Author
 
 * **Andres Ramirez** [Slack: @andres.ramirez / Email: andres.ramirez@mulesoft.com]

@@ -12,6 +12,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.mule.extension.jsonlogger.api.pojos.GlobalSettings;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.Initialisable;
@@ -31,7 +32,14 @@ import org.mule.runtime.extension.api.runtime.process.CompletionCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.inject.Inject;
+import java.security.spec.KeySpec;
 import java.util.*;
 
 /**
@@ -52,9 +60,9 @@ public class JsonloggerOperations implements Initialisable {
 
     // JSON Object Mapper
     private static final ObjectMapper om = new ObjectMapper()
-                                                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                                                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-                                                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+            .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
     @Inject
     private TransformationService transformationService;
 
@@ -96,6 +104,9 @@ public class JsonloggerOperations implements Initialisable {
         List<String> disabledFields = (config.getJsonOutput().getDisabledFields() != null) ? Arrays.asList(config.getJsonOutput().getDisabledFields().split(",")) : new ArrayList<>();
         log.debug("The following fields will be disabled for logging: " + disabledFields);
 
+        boolean encrypt = (config.getGlobalSettings().isEncryptPayload());
+
+
         // Logic to disable fields and/or parse TypedValues as String for JSON log printing
         Map<String, String> typedValuesAsString = new HashMap<>();
         try {
@@ -109,7 +120,7 @@ public class JsonloggerOperations implements Initialisable {
                 } else {
                     if (v != null) {
                         try {
-                            if(v instanceof ParameterResolver) {
+                            if (v instanceof ParameterResolver) {
                                 v = ((ParameterResolver) v).resolve();
                             }
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
@@ -126,6 +137,13 @@ public class JsonloggerOperations implements Initialisable {
                                 }
                                 BeanUtils.setProperty(loggerProcessor, k, null);
 
+                                if (encrypt) {
+                                    String secretKey = config.getGlobalSettings().getSecretKey();
+                                    String salt = config.getGlobalSettings().getEncryptionSalt();
+
+                                    stringifiedVal = encryptString(stringifiedVal, secretKey, salt);
+                                }
+
                                 typedValuesAsString.put(k, stringifiedVal);
                             }
                         } catch (Exception e) {
@@ -139,9 +157,17 @@ public class JsonloggerOperations implements Initialisable {
             log.error("Unknown error while processing the logger object", e);
         }
 
+        // Remove global settings from being logged
+        GlobalSettings tempGlobalSettings = new GlobalSettings();
+        tempGlobalSettings.setApplicationName(config.getGlobalSettings().getApplicationName());
+        tempGlobalSettings.setApplicationVersion(config.getGlobalSettings().getApplicationVersion());
+        tempGlobalSettings.setEnvironment(config.getGlobalSettings().getEnvironment());
+        tempGlobalSettings.setEncryptPayload(config.getGlobalSettings().isEncryptPayload());
+
         // Merge contents of loggerProcessor and globalSettings
         JsonNode nodeLoggerJson = om.valueToTree(loggerProcessor);
-        JsonNode nodeConfigJson = om.valueToTree(config.getGlobalSettings());
+        //JsonNode nodeConfigJson = om.valueToTree(config.getGlobalSettings());
+        JsonNode nodeConfigJson = om.valueToTree(tempGlobalSettings);
         ObjectNode mergedLogger = (ObjectNode) merge(nodeLoggerJson, nodeConfigJson);
 
         // Adding typedValue fields
@@ -251,6 +277,25 @@ public class JsonloggerOperations implements Initialisable {
             }
         }
         return mainNode;
+    }
+
+    private static String encryptString(String strToEncrypt, String secret, String salt) {
+        try {
+            byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            IvParameterSpec ivspec = new IvParameterSpec(iv);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(secret.toCharArray(), salt.getBytes(), 65536, 256);
+            SecretKey tmp = factory.generateSecret(spec);
+            SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
+        } catch (Exception e) {
+            System.out.println("Error while encrypting: " + e.toString());
+        }
+        return null;
     }
 
 }

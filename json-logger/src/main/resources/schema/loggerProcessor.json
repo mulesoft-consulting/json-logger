@@ -44,6 +44,7 @@
         "summary": "Message to be logged"
       }
     },
+
     "content": {
       "type": "string",
       "javaType": "org.mule.runtime.extension.api.runtime.parameter.ParameterResolver<org.mule.runtime.api.metadata.TypedValue<Object>>",
