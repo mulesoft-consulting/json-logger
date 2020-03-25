@@ -6,6 +6,8 @@ import com.google.common.cache.LoadingCache;
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
 import org.mule.runtime.extension.api.annotation.Operations;
 
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -15,37 +17,23 @@ import java.util.concurrent.TimeUnit;
 @Operations(JsonloggerOperations.class)
 public class JsonloggerConfiguration extends LoggerConfig {
 
-    // Cache methods
-    public Long getCachedTimerTimestamp(String key) throws Exception {
-        LoadingCache<String, Long> cache = getTimerCache();
-        return cache.get(key);
+    public ConcurrentHashMap<String,Long> timers = new ConcurrentHashMap<String,Long>();
+
+    public ConcurrentHashMap<String, Long> getTimers() { return timers; }
+
+    public void setTimers(ConcurrentHashMap<String, Long> timers) { this.timers = timers; }
+
+    public void printTimersKeys () {
+        System.out.println("Current timers: " + timers);
     }
 
-    private static LoadingCache<String, Long> timerCache;
-
-    static {
-        timerCache = CacheBuilder.newBuilder()
-                .maximumSize(1000000)
-                .expireAfterAccess(3, TimeUnit.MINUTES)
-                .build(
-                        new CacheLoader<String, Long>() {
-                            @Override
-                            public Long load(String key) throws Exception {
-                                return System.currentTimeMillis();
-                            }
-                        }
-                );
+    public Long getCachedTimerTimestamp(String key, Long initialTimeStamp) throws Exception {
+        Long startTimestamp = timers.putIfAbsent(key, initialTimeStamp);
+        return (startTimestamp == null) ? timers.get(key) : startTimestamp;
     }
 
-    public static LoadingCache<String, Long> getTimerCache() {
-        return timerCache;
+    public void removeCachedTimerTimestamp(String key) {
+        timers.remove(key);
     }
 
-    public static void invalidateTimerKey (String key) {
-        timerCache.invalidate(key);
-    }
-
-    public static void printTimerKeys () {
-        System.out.println(timerCache.asMap());
-    }
 }

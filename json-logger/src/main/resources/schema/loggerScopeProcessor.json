@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition for fields used in the logger message processor",
+  "type": "object",
+  "properties": {
+    "scopeTracePoint": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint",
+      "enum": [
+        "DATA_TRANSFORM_SCOPE",
+        "OUTBOUND_REQUEST_SCOPE",
+        "FLOW_LOGIC_SCOPE"
+      ],
+      "sdk": {
+        "default": "OUTBOUND_REQUEST_SCOPE",
+        "summary": "Current processing stage"
+      }
+    }
+  }
+}
