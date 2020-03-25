@@ -19,6 +19,10 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
 
+Make sure to replace the groupID in both pom.xmls (1 for json-logger, and 1 for jsonschema2pojo-mule-annotations) with your Anypoint Platform's Exchaneg OrgID value.
+
+i.e. `<groupId>Your_Org_ID</groupId>`
+
 ## Author
 
 * **Andres Ramirez** [Slack: @andres.ramirez / Email: andres.ramirez@mulesoft.com]
