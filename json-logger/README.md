@@ -10,8 +10,8 @@ Improvements:
 * Optimized parsing of TypedValue content fields
 
 New features:
-* Scoped loggers to capture ?scope bound elapsed time?. Great for performance tracking of specific components (e.g. outbound calls)
-* Added ?Parse content fields in json output? flag so that content fields can become part of final JSON output rather than a ?stringified version? of the content
+* Scoped loggers to capture "scope bound elapsed time". Great for performance tracking of specific components (e.g. outbound calls)
+* Added "Parse content fields in json output" flag so that content fields can become part of final JSON output rather than a "stringified version" of the content
 
 Add this dependency to your application pom.xml
 
