@@ -4,7 +4,7 @@
 	<groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
 	<artifactId>jsonschema2pojo-mule-annotations</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.1</version>
+	<version>1.0.0</version>
 	<name>jsonschema2pojo - Mule SDK Annotations Extension</name>
 	<description>Support for Mule (4.x) Java SDK</description>
 
