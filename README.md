@@ -19,9 +19,32 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
 
-Make sure to replace the groupID in both pom.xmls (1 for json-logger, and 1 for jsonschema2pojo-mule-annotations) with your Anypoint Platform's Exchaneg OrgID value.
+Running deploy.sh script will deploy both projects to your Organization Exchange
+e.g. deploy.sh <YOUR_ORG_ID>
 
-i.e. `<groupId>Your_Org_ID</groupId>`
+PS. You can only use the script the first time (unless you manually delete the previous assets from your exchange) as you can't deploy the same version to Exchange
+
+## 1.1.0 version - Release notes
+
+Improvements:
+* Removed Guava and caching in general with a more efficient handling of timers (for elapsed time)
+* Optimized generation of JSON output
+* Code optimizations
+* Minimized dependency footprint (down from ~23MB to ~3MB)
+* Optimized parsing of TypedValue content fields
+
+New features:
+* Scoped loggers to capture "scope bound elapsed time". Great for performance tracking of specific components (e.g. outbound calls)
+* Added "Parse content fields in json output" flag so that content fields can become part of final JSON output rather than a "stringified version" of the content
+
+Add this dependency to your application pom.xml
+
+```
+<groupId>YOUR_ORG_ID</groupId>
+<artifactId>json-logger</artifactId>
+<version>1.1.0-rc1</version>
+```
+
 
 ## Author
 
