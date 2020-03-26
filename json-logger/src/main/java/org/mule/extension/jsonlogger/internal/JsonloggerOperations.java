@@ -1,8 +1,11 @@
 package org.mule.extension.jsonlogger.internal;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -33,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.*;
 
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
@@ -100,6 +104,7 @@ public class JsonloggerOperations implements Initialisable {
 
         // Logic to disable fields and/or parse TypedValues as String for JSON log printing
         Map<String, String> typedValuesAsString = new HashMap<>();
+        Map<String, JsonNode> typedValuesAsJsonNode = new HashMap<>();
         try {
             PropertyUtils.describe(loggerProcessor).forEach((k, v) -> {
                 if (disabledFields.stream().anyMatch(k::equals)) {
@@ -117,19 +122,29 @@ public class JsonloggerOperations implements Initialisable {
                             if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                 log.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
                                 TypedValue<Object> typedVal = (TypedValue<Object>) v;
-                                DataType dataType = typedVal.getDataType();
-                                String stringifiedVal;
-                                Object originalVal = typedVal.getValue();
-                                log.debug("Parsing TypedValue for field " + k + " as string for logging...");
-                                if (originalVal.getClass().getSimpleName().equals("String")) {
-                                    stringifiedVal = (String) originalVal;
-                                } else {
-                                    stringifiedVal = (String) transformationService.transform(originalVal, dataType, JSON_STRING);
-                                }
-                                // Removing un-parsed value
+                                log.debug("Parsing TypedValue for field " + k);
+
+                                log.debug("TypedValue MediaType: " + typedVal.getDataType().getMediaType());
+                                log.debug("TypedValue Type: " + typedVal.getDataType().getType().getCanonicalName());
+
+                                // Remove unparsed field
                                 BeanUtils.setProperty(loggerProcessor, k, null);
 
-                                typedValuesAsString.put(k, stringifiedVal);
+                                // Evaluate typedValue
+                                if (typedVal.getValue() != null) {
+                                    // Should content type field be parsed as part of JSON log?
+                                    if (config.getJsonOutput().isParseContentFieldsInJsonOutput()) {
+                                        // Is content type application/json?
+                                        if (typedVal.getDataType().getMediaType().getPrimaryType().equals("application") && typedVal.getDataType().getMediaType().getSubType().equals("json")) {
+                                            // Inject parsed value
+                                            typedValuesAsJsonNode.put(k, om.readTree(typedVal.getValue().toString()));
+                                        } else {
+                                            typedValuesAsString.put(k, typedVal.getValue().toString());
+                                        }
+                                    } else {
+                                        typedValuesAsString.put(k, typedVal.getValue().toString());
+                                    }
+                                }
                             }
                         } catch (Exception e) {
                             log.error("Failed parsing field: " + k, e);
@@ -142,20 +157,27 @@ public class JsonloggerOperations implements Initialisable {
             log.error("Unknown error while processing the logger object", e);
         }
 
-        // Merge contents of loggerProcessor and globalSettings
-        JsonNode nodeLoggerJson = om.valueToTree(loggerProcessor);
-        JsonNode nodeConfigJson = om.valueToTree(config.getGlobalSettings());
-        ObjectNode mergedLogger = (ObjectNode) merge(nodeLoggerJson, nodeConfigJson);
+        ObjectNode mergedLogger = om.createObjectNode();
+        mergedLogger.setAll((ObjectNode) om.valueToTree(loggerProcessor));
+        mergedLogger.setAll((ObjectNode) om.valueToTree(config.getGlobalSettings()));
 
-        // Adding typedValue fields
-        JsonNode typedValuesNode = om.valueToTree(typedValuesAsString);
-        mergedLogger.setAll((ObjectNode) typedValuesNode);
+        /** Adding typedValue fields **/
+        // String values
+        if (!typedValuesAsString.isEmpty()) {
+            JsonNode typedValuesNode = om.valueToTree(typedValuesAsString);
+            mergedLogger.setAll((ObjectNode) typedValuesNode);
+        }
+        // JSONNode values
+        if (!typedValuesAsJsonNode.isEmpty()) {
+            mergedLogger.setAll(typedValuesAsJsonNode);
+        }
 
-        /* Adding additional metadata
+        /** Adding additional metadata
             - elapsed
             - threadName
             - locationInfo
-         */
+            - timestamp
+         **/
         mergedLogger.put("elapsed", Long.toString(elapsed));
 
         mergedLogger.put("threadName", Thread.currentThread().getName());
@@ -170,7 +192,7 @@ public class JsonloggerOperations implements Initialisable {
         // Add formatted timestamp entry to the logger
         mergedLogger.put("timestamp", getFormattedTimestamp(loggerTimestamp));
 
-        // Print Logger
+        /** Print Logger **/
         printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
 
         callback.success(VOID_RESULT);
@@ -194,19 +216,18 @@ public class JsonloggerOperations implements Initialisable {
 
         Long initialTimestamp = System.currentTimeMillis();
 
-        ObjectNode beforeLoggerProcessor = om.createObjectNode();
-        ObjectNode afterLoggerProcessor = om.createObjectNode();
+        ObjectNode loggerProcessor = om.createObjectNode();
 
-        beforeLoggerProcessor.put("correlationId", correlationId);
-        beforeLoggerProcessor.put("priority", priority.toString());
-        beforeLoggerProcessor.put("message", "Before " + scopeTracePoint);
-        beforeLoggerProcessor.put("tracePoint", scopeTracePoint.toString());
-        beforeLoggerProcessor.put("scopeElapsed", 0);
-        beforeLoggerProcessor.put("threadName", Thread.currentThread().getName());
-        beforeLoggerProcessor.put("timestamp", getFormattedTimestamp(initialTimestamp));
+        loggerProcessor.put("correlationId", correlationId);
+        loggerProcessor.put("priority", priority.toString());
+        loggerProcessor.put("message", "Before " + scopeTracePoint);
+        loggerProcessor.put("tracePoint", scopeTracePoint.toString());
+        loggerProcessor.put("scopeElapsed", 0);
+        loggerProcessor.put("threadName", Thread.currentThread().getName());
+        loggerProcessor.put("timestamp", getFormattedTimestamp(initialTimestamp));
         if (locationInfo) {
             Map<String, String> locationInfoMap = locationInfoToMap(location);
-            beforeLoggerProcessor.putPOJO("locationInfo", locationInfoMap);
+            loggerProcessor.putPOJO("locationInfo", locationInfoMap);
         }
 
         // Define JSON output formatting
@@ -218,7 +239,7 @@ public class JsonloggerOperations implements Initialisable {
         }
 
         // Print Logger
-        printObjectToLog(beforeLoggerProcessor, priority.toString(), isPrettyPrint);
+        printObjectToLog(loggerProcessor, priority.toString(), isPrettyPrint);
 
         operations.process(
                 result -> {
@@ -230,20 +251,12 @@ public class JsonloggerOperations implements Initialisable {
                     // Calculate elapsed time
                     Long elapsed = endTimestamp - initialTimestamp;
 
-                    afterLoggerProcessor.put("correlationId", correlationId);
-                    afterLoggerProcessor.put("priority", priority.toString());
-                    afterLoggerProcessor.put("message", "After " + scopeTracePoint);
-                    afterLoggerProcessor.put("tracePoint", scopeTracePoint.toString());
-                    afterLoggerProcessor.put("scopeElapsed", elapsed);
-                    afterLoggerProcessor.put("threadName", Thread.currentThread().getName());
-                    afterLoggerProcessor.put("timestamp", getFormattedTimestamp(endTimestamp));
-                    if (locationInfo) {
-                        Map<String, String> locationInfoMap = locationInfoToMap(location);
-                        afterLoggerProcessor.putPOJO("locationInfo", locationInfoMap);
-                    }
+                    loggerProcessor.put("message", "After " + scopeTracePoint);
+                    loggerProcessor.put("scopeElapsed", elapsed);
+                    loggerProcessor.put("timestamp", getFormattedTimestamp(endTimestamp));
 
                     // Print Logger
-                    printObjectToLog(afterLoggerProcessor, priority.toString(), isPrettyPrint);
+                    printObjectToLog(loggerProcessor, priority.toString(), isPrettyPrint);
 
                     callback.success(result);
                 },
@@ -251,27 +264,19 @@ public class JsonloggerOperations implements Initialisable {
 
                     /** ERROR scope logger **/
 
-                    ObjectNode errorLoggerProcessor = om.createObjectNode();
-
                     Long errorTimestamp = System.currentTimeMillis();
 
                     // Calculate elapsed time
                     Long elapsed = errorTimestamp - initialTimestamp;
 
-                    errorLoggerProcessor.put("correlationId", correlationId);
-                    errorLoggerProcessor.put("priority", "ERROR");
-                    errorLoggerProcessor.put("message", "Error found: " + error.getMessage());
-                    errorLoggerProcessor.put("tracePoint", "EXCEPTION");
-                    errorLoggerProcessor.put("scopeElapsed", elapsed);
-                    errorLoggerProcessor.put("threadName", Thread.currentThread().getName());
-                    errorLoggerProcessor.put("timestamp", getFormattedTimestamp(errorTimestamp));
-                    if (locationInfo) {
-                        Map<String, String> locationInfoMap = locationInfoToMap(location);
-                        errorLoggerProcessor.putPOJO("locationInfo", locationInfoMap);
-                    }
+                    loggerProcessor.put("priority", "ERROR");
+                    loggerProcessor.put("message", "Error found: " + error.getMessage());
+                    loggerProcessor.put("tracePoint", "EXCEPTION");
+                    loggerProcessor.put("scopeElapsed", elapsed);
+                    loggerProcessor.put("timestamp", getFormattedTimestamp(errorTimestamp));
 
                     // Print Logger
-                    printObjectToLog(errorLoggerProcessor, "ERROR", isPrettyPrint);
+                    printObjectToLog(loggerProcessor, "ERROR", isPrettyPrint);
 
                     callback.error(error);
                 });

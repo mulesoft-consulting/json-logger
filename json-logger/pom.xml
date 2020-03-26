@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
     <artifactId>json-logger</artifactId>
-    <version>1.1.0-SNAPSHOT23</version>
+    <version>1.1.0-SNAPSHOT49</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
@@ -37,6 +37,7 @@
                         <groupId>${project.groupId}</groupId>
                         <artifactId>jsonschema2pojo-mule-annotations</artifactId>
                         <version>1.0.0</version>
+                        <scope>compile</scope>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -67,15 +68,38 @@
     </distributionManagement>
 
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>org.jsonschema2pojo</groupId>-->
+<!--            <artifactId>jsonschema2pojo-maven-plugin</artifactId>-->
+<!--            <version>0.4.35</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>${project.groupId}</groupId>-->
+<!--            <artifactId>jsonschema2pojo-mule-annotations</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>org.jsonschema2pojo</groupId>
-            <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-            <version>0.4.35</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.3</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>jsonschema2pojo-mule-annotations</artifactId>
-            <version>1.0.0</version>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.5</version>
         </dependency>
     </dependencies>
     <pluginRepositories>

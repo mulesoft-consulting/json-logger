@@ -1,14 +1,9 @@
 package org.mule.extension.jsonlogger.internal;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
 import org.mule.runtime.extension.api.annotation.Operations;
 
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class represents an extension configuration, values set in this class are commonly used across multiple

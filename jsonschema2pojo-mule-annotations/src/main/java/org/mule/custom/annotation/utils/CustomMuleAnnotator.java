@@ -8,10 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -69,6 +66,12 @@ public class CustomMuleAnnotator extends AbstractAnnotator {
                 System.out.println(">> Found isPrimaryContent: " + String.valueOf(sdkMap.get("isPrimaryContent")));
                 if (Boolean.TRUE.equals(sdkMap.get("isPrimaryContent"))) {
                     field.annotate(Content.class).param("primary", true);
+                }
+            }
+            if (sdkMap.get("isNullSafe") != null) {
+                System.out.println(">> Found isNullSafe: " + String.valueOf(sdkMap.get("isNullSafe")));
+                if (Boolean.TRUE.equals(sdkMap.get("isNullSafe"))) {
+                    field.annotate(NullSafe.class);
                 }
             }
             if (sdkMap.get("expressionSupport") != null) {

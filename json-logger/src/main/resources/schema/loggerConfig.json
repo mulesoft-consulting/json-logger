@@ -65,6 +65,16 @@
             "expressionSupport": "REQUIRED"
           },
           "note": "This field is mandatory. DON'T REMOVE"
+        },
+        "parseContentFieldsInJsonOutput": {
+          "type": "boolean",
+          "javaType": "boolean",
+          "sdk": {
+            "summary": "Indicate if Content fields should be parsed as part of the JSON logger output",
+            "default": true,
+            "expressionSupport": "SUPPORTED"
+          },
+          "note": "This field is mandatory. DON'T REMOVE"
         }
       },
       "sdk": {
