@@ -56,8 +56,6 @@ public class JsonloggerOperations implements Initialisable {
                                                 .setSerializationInclusion(JsonInclude.Include.NON_NULL)
                                                 .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
                                                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-    @Inject
-    private TransformationService transformationService;
 
     /**
      * Log a new entry

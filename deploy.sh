@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# This script requires the following 3 arguments in the following order:
-# 1. Anypoint Platform orgId
+# This script requires the following:
+# Anypoint Platform Organization ID
+
 # Command should be called as follows:
 # ./deploy.sh some-org-id-value
 
