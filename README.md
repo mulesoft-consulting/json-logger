@@ -19,12 +19,17 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 
 Please check this blogpost for more details: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
 
-Running deploy.sh script will deploy both projects to your Organization Exchange
+> Running deploy.sh script will deploy both projects to your Organization Exchange
 e.g. deploy.sh <YOUR_ORG_ID>
 
-PS. You can only use the script the first time (unless you manually delete the previous assets from your exchange) as you can't deploy the same version to Exchange
+> Running deploy.sh script will ONLY deploy the json-loger project to your Organization Exchange
+e.g. deploy-logger-only.sh <YOUR_ORG_ID>
 
-## 1.1.0 version - Release notes
+PS. You can only use the _deploy.sh_ script once (unless you manually delete the previous assets from your exchange) as you can't deploy the same version to Exchange
+
+##  Release notes
+
+### 1.1.0 version
 
 Improvements:
 * Removed Guava and caching in general with a more efficient handling of timers (for elapsed time)
