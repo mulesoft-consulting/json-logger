@@ -20,9 +20,6 @@ echo "Replacing OrgId token..."
 echo sed -i.bkp "s/ORG_ID_TOKEN/$1/g" json-logger/pom.xml
 sed -i.bkp "s/ORG_ID_TOKEN/$1/g" json-logger/pom.xml
 
-echo sed -i.bkp "s/ORG_ID_TOKEN/$1/g" jsonschema2pojo-mule-annotations/pom.xml
-sed -i.bkp "s/ORG_ID_TOKEN/$1/g" jsonschema2pojo-mule-annotations/pom.xml
-
 # Deploying to Exchange
 echo "Deploying to Exchange..."
 
