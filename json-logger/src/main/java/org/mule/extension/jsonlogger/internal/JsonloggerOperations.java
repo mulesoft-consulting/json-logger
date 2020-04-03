@@ -3,24 +3,30 @@ package org.mule.extension.jsonlogger.internal;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mule.extensions.amqp.api.message.AmqpMessageBuilder;
+import com.mule.extensions.amqp.api.message.AmqpProperties;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.joda.time.DateTime;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint;
+import org.mule.extensions.jms.api.message.JmsMessageBuilder;
+import org.mule.extensions.jms.api.message.JmsxProperties;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.metadata.TypedValue;
-import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.client.DefaultOperationParameters;
+import org.mule.runtime.extension.api.client.ExtensionsClient;
+import org.mule.runtime.extension.api.client.OperationParameters;
 import org.mule.runtime.extension.api.runtime.operation.FlowListener;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
@@ -30,10 +36,11 @@ import org.mule.runtime.extension.api.runtime.route.Chain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
+import static org.mule.runtime.api.metadata.DataType.*;
 
 /**
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
@@ -57,6 +64,65 @@ public class JsonloggerOperations implements Initialisable {
                                                 .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
                                                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
 
+    public void testJMS(ExtensionsClient client,
+                     String message) {
+
+        //TODO: Add logic to validate which configuration (if any) is not null and push msg to that
+        try {
+            // JMS
+            OperationParameters parameters = DefaultOperationParameters.builder().configName("JMS_Config")
+                    .addParameter("destination", "logger-queue")
+                    //.addParameter("message", TempBody.class, DefaultOperationParameters.builder().addParameter("body", new TypedValue<>(message, OBJECT)))
+                    .addParameter("messageBuilder", JmsMessageBuilder.class, DefaultOperationParameters.builder()
+                            .addParameter("body", new TypedValue<>(message, OBJECT))
+                            .addParameter("jmsxProperties", new JmsxProperties())
+                            .addParameter("properties", new HashMap<String, Object>()))
+                    .build();
+            Result<String, Object> result = client.execute("JMS", "publish", parameters);
+        } catch (Exception e) {
+            System.out.println(">>>> ERROR JMS!!!");
+            e.printStackTrace();
+        }
+    }
+
+public void testAMQ(ExtensionsClient client,
+                    String message) {
+    try {
+        // AMQ
+        OperationParameters parameters = DefaultOperationParameters.builder().configName("Anypoint_MQ_Config")
+                .addParameter("destination", "logger-queue")
+                .addParameter("body", new TypedValue<>(new ByteArrayInputStream(message.getBytes()), INPUT_STREAM))
+                .build();
+        Result<String, Object> result = client.execute("Anypoint MQ", "publish", parameters);
+
+    } catch (Exception e) {
+        System.out.println(">>>> ERROR AMQ!!!");
+        e.printStackTrace();
+    }
+}
+
+    public void testAMQP(ExtensionsClient client,
+                        String message) {
+
+        //TODO: Add logic to validate which configuration (if any) is not null and push msg to that
+        try {
+            // AMQP
+            System.out.println("new AMQP");
+
+            OperationParameters parameters = DefaultOperationParameters.builder().configName("AMQP_Config")
+                    .addParameter("exchangeName", "logger-exchange")
+                    .addParameter("messageBuilder", AmqpMessageBuilder.class, DefaultOperationParameters.builder()
+                            .addParameter("body", new TypedValue<>(message, OBJECT))
+                            .addParameter("properties", new AmqpProperties()))
+//                            .addParameter("headers", new HashMap<String, Object>()))
+                    .build();
+            Result<String, Object> result = client.execute("AMQP", "publish", parameters);
+        } catch (Exception e) {
+            System.out.println(">>>> ERROR AMQP!!!");
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Log a new entry
      */
@@ -66,6 +132,7 @@ public class JsonloggerOperations implements Initialisable {
                        ComponentLocation location,
                        @Config JsonloggerConfiguration config,
                        FlowListener flowListener,
+                       ExtensionsClient client,
                        CompletionCallback<Void, Void> callback) {
 
         Long initialTimestamp,loggerTimestamp;
@@ -184,13 +251,53 @@ public class JsonloggerOperations implements Initialisable {
         mergedLogger.put("timestamp", getFormattedTimestamp(loggerTimestamp));
 
         /** Print Logger **/
-        printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
+        String finalLog = printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
+
+        /** Forward Log to External Destination **/
+        if (config.getExternalDestinations().getSelectedConfiguration() != null) {
+            try {
+                OperationParameters parameters;
+
+                switch (config.getExternalDestinations().getSelectedConfiguration()) {
+                    case "AMQ":
+                        parameters = DefaultOperationParameters.builder().configName(config.getExternalDestinations().getAnypointMQConfigurationRef())
+                                .addParameter("destination", config.getDestination())
+                                .addParameter("body", new TypedValue<>(new ByteArrayInputStream(finalLog.getBytes()), JSON_STRING))
+                                .build();
+                        client.execute("Anypoint MQ", "publish", parameters);
+                        break;
+                    case "JMS":
+                        parameters = DefaultOperationParameters.builder().configName(config.getExternalDestinations().getJmsConfigurationRef())
+                                .addParameter("destination", config.getDestination())
+                                //.addParameter("message", TempBody.class, DefaultOperationParameters.builder().addParameter("body", new TypedValue<>(message, OBJECT)))
+                                .addParameter("messageBuilder", JmsMessageBuilder.class, DefaultOperationParameters.builder()
+                                        .addParameter("body", new TypedValue<>(finalLog, JSON_STRING))
+                                        .addParameter("jmsxProperties", new JmsxProperties())
+                                        .addParameter("properties", new HashMap<String, Object>()))
+                                .build();
+                        client.execute("JMS", "publish", parameters);
+                        break;
+                    case "AMQP":
+                        parameters = DefaultOperationParameters.builder().configName(config.getExternalDestinations().getAmqpConfigurationRef())
+                                .addParameter("exchangeName", config.getDestination())
+                                .addParameter("messageBuilder", AmqpMessageBuilder.class, DefaultOperationParameters.builder()
+                                        .addParameter("body", new TypedValue<>(finalLog, JSON_STRING))
+                                        .addParameter("properties", new AmqpProperties()))
+                                .build();
+                        client.execute("AMQP", "publish", parameters);
+                        break;
+                }
+            } catch (Exception e) {
+                log.error("Error publishing message to external destination: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
         callback.success(VOID_RESULT);
     }
 
     /**
-     * Log a new entry
+     * Log scope
      */
     @Execution(ExecutionType.BLOCKING)
     public void loggerScope(@Optional(defaultValue="INFO") Priority priority,
@@ -198,7 +305,6 @@ public class JsonloggerOperations implements Initialisable {
                             @Optional(defaultValue="true") boolean locationInfo,
                             @Optional(defaultValue="true") boolean prettyPrint,
                             @Optional(defaultValue="#[correlationId]") @Placement(tab = "Advanced") String correlationId,
-                            CorrelationInfo correlationInfo,
                             ComponentLocation location,
                             Chain operations,
                             CompletionCallback<Object, Object> callback) {
@@ -297,7 +403,7 @@ public class JsonloggerOperations implements Initialisable {
         return timestamp;
     }
 
-    private void printObjectToLog(ObjectNode loggerObj, String priority, boolean isPrettyPrint) {
+    private String printObjectToLog(ObjectNode loggerObj, String priority, boolean isPrettyPrint) {
         ObjectWriter ow = (isPrettyPrint) ? om.writer().withDefaultPrettyPrinter() : om.writer();
         String logLine = "";
         try {
@@ -308,6 +414,8 @@ public class JsonloggerOperations implements Initialisable {
             log.error("Error parsing log data as a string", e);
         }
         doLog(priority.toString(), logLine);
+
+        return logLine;
     }
 
     private void doLog(String priority, String logLine) {

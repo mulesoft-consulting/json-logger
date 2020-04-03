@@ -56,16 +56,6 @@
           },
           "note": "This field is mandatory. DON'T REMOVE"
         },
-        "disabledFields": {
-          "type": "string",
-          "sdk": {
-            "summary": "Indicate which fields should be disabled from logging separated by comma. They should match the exact name given in loggerProcessor.json schema",
-            "example": "e.g. message, content",
-            "required": false,
-            "expressionSupport": "REQUIRED"
-          },
-          "note": "This field is mandatory. DON'T REMOVE"
-        },
         "parseContentFieldsInJsonOutput": {
           "type": "boolean",
           "javaType": "boolean",
@@ -73,6 +63,16 @@
             "summary": "Indicate if Content fields should be parsed as part of the JSON logger output",
             "default": true,
             "expressionSupport": "SUPPORTED"
+          },
+          "note": "This field is mandatory. DON'T REMOVE"
+        },
+        "disabledFields": {
+          "type": "string",
+          "sdk": {
+            "summary": "Indicate which fields should be disabled from logging separated by comma. They should match the exact name given in loggerProcessor.json schema",
+            "example": "e.g. message, content",
+            "required": false,
+            "expressionSupport": "REQUIRED"
           },
           "note": "This field is mandatory. DON'T REMOVE"
         }
