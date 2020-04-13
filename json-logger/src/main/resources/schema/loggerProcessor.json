@@ -16,7 +16,8 @@
       "sdk": {
         "default": "INFO",
         "summary": "Logger priority"
-      }
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
     },
     "tracePoint": {
       "type": "string",
@@ -52,6 +53,14 @@
         "summary": "Remove if no content should be logged",
         "isContent": true
       }
+    },
+    "category": {
+      "type": "string",
+      "sdk": {
+        "required": false,
+        "summary": "If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
     },
     "correlationId": {
       "type": "string",

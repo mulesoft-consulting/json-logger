@@ -1,16 +1,11 @@
 package org.mule.extension.jsonlogger.internal;
 
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
-import org.mule.extension.jsonlogger.internal.destinations.ExternalDestinations;
-import org.mule.runtime.api.meta.ExpressionSupport;
-import org.mule.runtime.extension.api.annotation.Expression;
+import org.mule.extension.jsonlogger.internal.destinations.Destination;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,45 +17,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JsonloggerConfiguration extends LoggerConfig {
 
     @Parameter
-    @Expression(ExpressionSupport.NOT_SUPPORTED)
-    @ParameterGroup(name = "External Destination")
-    @Summary("Provide a configuration reference for external distribution. Only one destination can be defined.")
-    private ExternalDestinations externalDestinations;
-
-    @Parameter
-    @Placement(tab = "Destinations")
     @Optional
-    @Summary("Name of the target destination (e.g. logger-queue, logger-exchange)")
-    private String destination;
-
-    @Parameter
     @Placement(tab = "Destinations")
-    @Optional
-    @Summary("Indicate which categories should be send externally. If empty, all will be send.")
-    private String categoriesForExternalDestination;
+    private Destination externalDestination;
 
-    public String getDestination() {
-        return destination;
+    public Destination getExternalDestination() {
+        return externalDestination;
     }
 
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public ExternalDestinations getExternalDestinations() {
-        return externalDestinations;
-    }
-
-    public void setExternalDestinations(ExternalDestinations externalDestinations) {
-        this.externalDestinations = externalDestinations;
-    }
-
-    public String getCategoriesForExternalDestination() {
-        return categoriesForExternalDestination;
-    }
-
-    public void setCategoriesForExternalDestination(String categoriesForExternalDestination) {
-        this.categoriesForExternalDestination = categoriesForExternalDestination;
+    public void setExternalDestination(Destination externalDestination) {
+        this.externalDestination = externalDestination;
     }
 
     /** Timer methods for Elapsed Time **/

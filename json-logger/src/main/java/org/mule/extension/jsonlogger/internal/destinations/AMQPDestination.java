@@ -1,8 +1,8 @@
 package org.mule.extension.jsonlogger.internal.destinations;
 
+import com.mule.extensions.amqp.api.message.AmqpMessageBuilder;
+import com.mule.extensions.amqp.api.message.AmqpProperties;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
-import org.mule.extensions.jms.api.message.JmsMessageBuilder;
-import org.mule.extensions.jms.api.message.JmsxProperties;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -14,25 +14,24 @@ import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.client.OperationParameters;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.mule.runtime.api.metadata.DataType.JSON_STRING;
 
-public class JMSDestination implements Destination {
+public class AMQPDestination implements Destination {
 
     @Parameter
     @Optional
-    @ConfigReference(namespace = "JMS", name = "CONFIG")
+    @ConfigReference(namespace = "AMQP", name = "CONFIG")
     @DisplayName("Configuration Ref")
-    private String jmsConfigurationRef;
+    private String amqpConfigurationRef;
 
     @Parameter
     @Optional
-    @Summary("Name of the target queue destination (e.g. logger-queue)")
-    @DisplayName("Queue Destination")
-    private String queueDestination;
+    @Summary("Name of the target exchange destination (e.g. logger-exchange)")
+    @DisplayName("Exchange Destination")
+    private String exchangeDestination;
 
     @Parameter
     @Optional
@@ -42,7 +41,7 @@ public class JMSDestination implements Destination {
 
     @Override
     public String getSelectedDestinationType() {
-        return "JMS";
+        return "AMQP";
     }
 
     @Override
@@ -53,14 +52,13 @@ public class JMSDestination implements Destination {
     @Override
     public void sendToExternalDestination(ExtensionsClient client, String finalLog, String correlationId) {
         try {
-            OperationParameters parameters = DefaultOperationParameters.builder().configName(this.jmsConfigurationRef)
-                    .addParameter("destination", this.queueDestination)
-                    .addParameter("messageBuilder", JmsMessageBuilder.class, DefaultOperationParameters.builder()
+            OperationParameters parameters = DefaultOperationParameters.builder().configName(this.amqpConfigurationRef)
+                    .addParameter("exchangeName", this.exchangeDestination)
+                    .addParameter("messageBuilder", AmqpMessageBuilder.class, DefaultOperationParameters.builder()
                             .addParameter("body", new TypedValue<>(finalLog, JSON_STRING))
-                            .addParameter("jmsxProperties", new JmsxProperties())
-                            .addParameter("properties", new HashMap<String, Object>()))
+                            .addParameter("properties", new AmqpProperties()))
                     .build();
-            client.executeAsync("JMS", "publish", parameters);
+            client.executeAsync("AMQP", "publish", parameters);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
