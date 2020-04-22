@@ -9,18 +9,20 @@ import org.joda.time.DateTime;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint;
+import org.mule.extension.jsonlogger.internal.datamask.JsonMasker;
+import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.metadata.TypedValue;
-import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.runtime.operation.FlowListener;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
@@ -41,21 +43,18 @@ import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 public class JsonloggerOperations implements Initialisable {
 
     /**
-     * Create the SLF4J logger
-     * jsonLogger: JSON output log
+     * jsonLogger: JSON Logger output log
      * log: Connector internal log
      */
-    private static final Logger jsonLogger = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
+    protected transient Logger jsonLogger;
     private static final Logger log = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLoggerExtension");
 
     // Void Result for NIO
-    private static final Result<Void, Void> VOID_RESULT = Result.<Void, Void>builder().build();
+    private final Result<Void, Void> VOID_RESULT = Result.<Void, Void>builder().build();
 
     // JSON Object Mapper
-    private static final ObjectMapper om = new ObjectMapper()
-                                                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                                                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-                                                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+    @Inject
+    ObjectMapperSingleton om;
 
     /**
      * Log a new entry
@@ -66,10 +65,13 @@ public class JsonloggerOperations implements Initialisable {
                        ComponentLocation location,
                        @Config JsonloggerConfiguration config,
                        FlowListener flowListener,
+                       ExtensionsClient client,
                        CompletionCallback<Void, Void> callback) {
 
         Long initialTimestamp,loggerTimestamp;
         initialTimestamp = loggerTimestamp = System.currentTimeMillis();
+
+        initLoggerCategory(loggerProcessor.getCategory());
 
         try {
             // Add cache entry for initial timestamp based on unique EventId
@@ -117,6 +119,7 @@ public class JsonloggerOperations implements Initialisable {
 
                                 log.debug("TypedValue MediaType: " + typedVal.getDataType().getMediaType());
                                 log.debug("TypedValue Type: " + typedVal.getDataType().getType().getCanonicalName());
+                                log.debug("TypedValue Class: " + typedVal.getValue().getClass().getCanonicalName());
 
                                 // Remove unparsed field
                                 BeanUtils.setProperty(loggerProcessor, k, null);
@@ -127,8 +130,17 @@ public class JsonloggerOperations implements Initialisable {
                                     if (config.getJsonOutput().isParseContentFieldsInJsonOutput()) {
                                         // Is content type application/json?
                                         if (typedVal.getDataType().getMediaType().getPrimaryType().equals("application") && typedVal.getDataType().getMediaType().getSubType().equals("json")) {
-                                            // Inject parsed value
-                                            typedValuesAsJsonNode.put(k, om.readTree(typedVal.getValue().toString()));
+                                            // Apply masking if needed
+                                            List<String> dataMaskingFields = (config.getJsonOutput().getContentFieldsDataMasking() != null) ? Arrays.asList(config.getJsonOutput().getContentFieldsDataMasking().split(",")) : new ArrayList<>();
+                                            log.debug("The following JSON keys/paths will be masked for logging: " + dataMaskingFields);
+                                            if (!dataMaskingFields.isEmpty()) {
+                                                JsonNode tempContentNode = om.getObjectMapper().readTree(typedVal.getValue().toString());
+                                                JsonMasker masker = new JsonMasker(dataMaskingFields, true);
+                                                JsonNode masked = masker.mask(tempContentNode);
+                                                typedValuesAsJsonNode.put(k, masked);
+                                            } else {
+                                                typedValuesAsJsonNode.put(k, om.getObjectMapper().readTree(typedVal.getValue().toString()));
+                                            }
                                         } else {
                                             typedValuesAsString.put(k, typedVal.getValue().toString());
                                         }
@@ -148,14 +160,14 @@ public class JsonloggerOperations implements Initialisable {
             log.error("Unknown error while processing the logger object", e);
         }
 
-        ObjectNode mergedLogger = om.createObjectNode();
-        mergedLogger.setAll((ObjectNode) om.valueToTree(loggerProcessor));
-        mergedLogger.setAll((ObjectNode) om.valueToTree(config.getGlobalSettings()));
+        ObjectNode mergedLogger = om.getObjectMapper().createObjectNode();
+        mergedLogger.setAll((ObjectNode) om.getObjectMapper().valueToTree(loggerProcessor));
+        mergedLogger.setAll((ObjectNode) om.getObjectMapper().valueToTree(config.getGlobalSettings()));
 
         /** Adding typedValue fields **/
         // String values
         if (!typedValuesAsString.isEmpty()) {
-            JsonNode typedValuesNode = om.valueToTree(typedValuesAsString);
+            JsonNode typedValuesNode = om.getObjectMapper().valueToTree(typedValuesAsString);
             mergedLogger.setAll((ObjectNode) typedValuesNode);
         }
         // JSONNode values
@@ -184,13 +196,21 @@ public class JsonloggerOperations implements Initialisable {
         mergedLogger.put("timestamp", getFormattedTimestamp(loggerTimestamp));
 
         /** Print Logger **/
-        printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
+        String finalLog = printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
+
+        /** Forward Log to External Destination **/
+        if (config.getExternalDestination() != null) {
+            if (config.getExternalDestination().getSupportedCategories().isEmpty() || config.getExternalDestination().getSupportedCategories().contains(jsonLogger.getName())) {
+                log.debug(jsonLogger.getName() + " is a supported category for external destination");
+                config.getExternalDestination().sendToExternalDestination(client, finalLog, loggerProcessor.getCorrelationId());
+            }
+        }
 
         callback.success(VOID_RESULT);
     }
 
     /**
-     * Log a new entry
+     * Log scope
      */
     @Execution(ExecutionType.BLOCKING)
     public void loggerScope(@Optional(defaultValue="INFO") Priority priority,
@@ -198,7 +218,6 @@ public class JsonloggerOperations implements Initialisable {
                             @Optional(defaultValue="true") boolean locationInfo,
                             @Optional(defaultValue="true") boolean prettyPrint,
                             @Optional(defaultValue="#[correlationId]") @Placement(tab = "Advanced") String correlationId,
-                            CorrelationInfo correlationInfo,
                             ComponentLocation location,
                             Chain operations,
                             CompletionCallback<Object, Object> callback) {
@@ -207,7 +226,7 @@ public class JsonloggerOperations implements Initialisable {
 
         Long initialTimestamp = System.currentTimeMillis();
 
-        ObjectNode loggerProcessor = om.createObjectNode();
+        ObjectNode loggerProcessor = om.getObjectMapper().createObjectNode();
 
         loggerProcessor.put("correlationId", correlationId);
         loggerProcessor.put("priority", priority.toString());
@@ -297,17 +316,19 @@ public class JsonloggerOperations implements Initialisable {
         return timestamp;
     }
 
-    private void printObjectToLog(ObjectNode loggerObj, String priority, boolean isPrettyPrint) {
-        ObjectWriter ow = (isPrettyPrint) ? om.writer().withDefaultPrettyPrinter() : om.writer();
+    private String printObjectToLog(ObjectNode loggerObj, String priority, boolean isPrettyPrint) {
+        ObjectWriter ow = (isPrettyPrint) ? om.getObjectMapper().writer().withDefaultPrettyPrinter() : om.getObjectMapper().writer();
         String logLine = "";
         try {
             // JsonNode to Object for key sorting
-            final Object obj = om.treeToValue(loggerObj, Object.class);
+            final Object obj = om.getObjectMapper().treeToValue(loggerObj, Object.class);
             logLine = ow.writeValueAsString(obj);
         } catch (Exception e) {
             log.error("Error parsing log data as a string", e);
         }
         doLog(priority.toString(), logLine);
+
+        return logLine;
     }
 
     private void doLog(String priority, String logLine) {
@@ -332,6 +353,15 @@ public class JsonloggerOperations implements Initialisable {
 
     @Override
     public void initialise() throws InitialisationException {
+    }
+
+    protected void initLoggerCategory(String category) {
+        if (category != null) {
+            jsonLogger = LoggerFactory.getLogger(category);
+        } else {
+            jsonLogger = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
+        }
+        log.debug("category set: " + jsonLogger.getName());
     }
 
     // Allows executing timer cleanup on flowListener onComplete events

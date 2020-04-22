@@ -9,10 +9,7 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JFieldVar;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Example;
-import org.mule.runtime.extension.api.annotation.param.display.Placement;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.mule.runtime.extension.api.annotation.param.display.*;
 
 import static org.mule.runtime.api.meta.ExpressionSupport.*;
 
@@ -72,6 +69,12 @@ public class CustomMuleAnnotator extends AbstractAnnotator {
                 System.out.println(">> Found isNullSafe: " + String.valueOf(sdkMap.get("isNullSafe")));
                 if (Boolean.TRUE.equals(sdkMap.get("isNullSafe"))) {
                     field.annotate(NullSafe.class);
+                }
+            }
+            if (sdkMap.get("isPassword") != null) {
+                System.out.println(">> Found isPassword: " + String.valueOf(sdkMap.get("isPassword")));
+                if (Boolean.TRUE.equals(sdkMap.get("isPassword"))) {
+                    field.annotate(Password.class);
                 }
             }
             if (sdkMap.get("expressionSupport") != null) {

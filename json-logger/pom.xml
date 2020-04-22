@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ORG_ID_TOKEN</groupId>
     <artifactId>json-logger</artifactId>
-    <version>1.1.0-rc1</version>
+    <version>2.0.0-rc01</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
@@ -34,9 +34,9 @@
                 <version>0.4.35</version>
                 <dependencies>
                     <dependency>
-                        <groupId>${project.groupId}</groupId>
+                        <groupId>org.mulesoft.consulting</groupId>
                         <artifactId>jsonschema2pojo-mule-annotations</artifactId>
-                        <version>1.0.0</version>
+                        <version>1.1.0</version>
                         <scope>compile</scope>
                     </dependency>
                 </dependencies>
@@ -89,16 +89,46 @@
             <artifactId>joda-time</artifactId>
             <version>2.10.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.mule.connectors</groupId>
+            <artifactId>mule-jms-connector</artifactId>
+            <version>1.6.3</version>
+            <classifier>mule-plugin</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mulesoft.connectors</groupId>
+            <artifactId>mule-amqp-connector</artifactId>
+            <version>1.6.0</version>
+            <classifier>mule-plugin</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mulesoft.muleesb.modules</groupId>
+            <artifactId>anypoint-mq-rest-client</artifactId>
+            <version>3.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>async-http-client</artifactId>
+                    <groupId>com.ning</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.4.0</version>
+        </dependency>
     </dependencies>
-    <pluginRepositories>
-        <!-- Shared Mule Services Plugin Repository -->
-        <pluginRepository>
-            <id>Exchange2</id>
-            <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
-            <layout>default</layout>
-        </pluginRepository>
-    </pluginRepositories>
+<!--    <pluginRepositories>-->
+<!--        &lt;!&ndash; Shared Mule Services Plugin Repository &ndash;&gt;-->
+<!--        <pluginRepository>-->
+<!--            <id>Exchange2</id>-->
+<!--            <name>Exchange2 Repository</name>-->
+<!--            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>-->
+<!--            <layout>default</layout>-->
+<!--        </pluginRepository>-->
+<!--    </pluginRepositories>-->
     <repositories>
         <!-- Shared Mule Services Repository -->
         <repository>

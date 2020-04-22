@@ -1,7 +1,12 @@
 package org.mule.extension.jsonlogger.internal;
 
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
+import org.mule.extension.jsonlogger.internal.destinations.Destination;
 import org.mule.runtime.extension.api.annotation.Operations;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
+import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.Placement;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,6 +16,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Operations(JsonloggerOperations.class)
 public class JsonloggerConfiguration extends LoggerConfig {
+
+    @Parameter
+    @Optional
+    @Placement(tab = "Destinations")
+    private Destination externalDestination;
+
+    public Destination getExternalDestination() {
+        return externalDestination;
+    }
+
+    public void setExternalDestination(Destination externalDestination) {
+        this.externalDestination = externalDestination;
+    }
+
+    /** Timer methods for Elapsed Time **/
 
     public ConcurrentHashMap<String,Long> timers = new ConcurrentHashMap<String,Long>();
 
