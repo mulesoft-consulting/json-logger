@@ -2,21 +2,22 @@ package org.mule.extension.jsonlogger.internal.destinations;
 
 import com.mulesoft.mq.restclient.api.*;
 import com.mulesoft.mq.restclient.impl.OAuthCredentials;
-import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extension.jsonlogger.internal.destinations.amq.client.MuleBasedAnypointMQClientFactory;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.scheduler.SchedulerService;
-import org.mule.runtime.api.tls.TlsContextFactory;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
-import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.http.api.HttpService;
 import org.mule.runtime.http.api.client.HttpClient;
 import org.mule.runtime.http.api.client.HttpClientConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
@@ -25,9 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.mule.runtime.extension.api.annotation.param.display.Placement.CONNECTION_TAB;
 
 public class AMQDestination implements Destination {
 
@@ -63,11 +61,13 @@ public class AMQDestination implements Destination {
      */
     @Parameter
     @DisplayName("Client Secret")
+    @Password
     @Summary("The Client App Secret for the given Client App ID")
     private String clientSecret;
 
     @Parameter
     @Optional
+    @NullSafe
     @Summary("Indicate which log categories should be send (e.g. [\"my.category\",\"another.category\"]). If empty, all will be send.")
     @DisplayName("Log Categories")
     private ArrayList<String> logCategories;
@@ -78,8 +78,9 @@ public class AMQDestination implements Destination {
     @Inject
     protected SchedulerService schedulerService;
 
-    private static final String AMQ_HTTP_CLIENT = "amqHttpClient";
-    private static final String USER_AGENT_VERSION = "3.1.0"; // Version of the AMQ Connector code this logic is based of
+    private final String AMQ_HTTP_CLIENT = "amqHttpClient";
+    private final String USER_AGENT_VERSION = "3.1.0"; // Version of the AMQ Connector code this logic is based of
+    private static final Logger log = LoggerFactory.getLogger(AMQDestination.class);
 
     @Override
     public String getSelectedDestinationType() {
@@ -100,17 +101,14 @@ public class AMQDestination implements Destination {
                         .build();
             HttpClient httpClient = httpService.getClientFactory().create(httpClientConfiguration);
             httpClient.start();
-            System.out.println("HTTP configured");
 
             // Start AMQ Client
             AnypointMqClient amqClient = new MuleBasedAnypointMQClientFactory(httpClient, schedulerService.ioScheduler())
                         .createClient(url, new OAuthCredentials(clientId, clientSecret), USER_AGENT_VERSION);
             amqClient.init();
-            System.out.println("AMQ Client configured");
 
             // Locate AMQ destination
             DestinationLocator destinationLocator = amqClient.createDestinationLocator();
-            System.out.println("DestinationLocator configured");
 
             // Send message
             MediaType mediaType = MediaType.parse("application/json; charset=UTF-8");
@@ -119,7 +117,6 @@ public class AMQDestination implements Destination {
                     mediaType.getCharset(), correlationId, new HashMap<>(), null, null);
 
             DestinationLocation location = destinationLocator.getDestinationLocation(queueOrExchangeDestination);
-            System.out.println("Location configured");
 
             destinationLocator.getDestination(location)
                     .send(message)
@@ -127,18 +124,18 @@ public class AMQDestination implements Destination {
 
                         @Override
                         public void onSuccess(MessageIdResult result) {
-                            System.out.println("Message published successfully: " + result.getMessageId());
+                            log.debug("Message published successfully: " + result.getMessageId());
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            System.out.println(String.format("Failed to publish message to destination '%s': %s", queueOrExchangeDestination, e.getMessage()));
+                            log.error(String.format("Failed to publish message to destination '%s': %s", queueOrExchangeDestination, e.getMessage()));
                             e.printStackTrace();
                         }
                     });
 
         } catch (Exception e) {
-            System.out.println("Error sending message to AMQ: " + e.getMessage());
+            log.error("Error sending message to AMQ: " + e.getMessage());
             e.printStackTrace();
         }
     }

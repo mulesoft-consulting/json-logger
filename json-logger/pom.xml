@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
     <artifactId>json-logger</artifactId>
-    <version>1.1.0-SNAPSHOT_11</version>
+    <version>1.1.0-SNAPSHOT_22</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
@@ -34,9 +34,9 @@
                 <version>0.4.35</version>
                 <dependencies>
                     <dependency>
-                        <groupId>${project.groupId}</groupId>
+                        <groupId>org.mulesoft.consulting</groupId>
                         <artifactId>jsonschema2pojo-mule-annotations</artifactId>
-                        <version>1.0.0</version>
+                        <version>1.1.0</version>
                         <scope>compile</scope>
                     </dependency>
                 </dependencies>
@@ -114,16 +114,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.4.0</version>
+        </dependency>
     </dependencies>
-    <pluginRepositories>
-        <!-- Shared Mule Services Plugin Repository -->
-        <pluginRepository>
-            <id>Exchange2</id>
-            <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
-            <layout>default</layout>
-        </pluginRepository>
-    </pluginRepositories>
+<!--    <pluginRepositories>-->
+<!--        &lt;!&ndash; Shared Mule Services Plugin Repository &ndash;&gt;-->
+<!--        <pluginRepository>-->
+<!--            <id>Exchange2</id>-->
+<!--            <name>Exchange2 Repository</name>-->
+<!--            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>-->
+<!--            <layout>default</layout>-->
+<!--        </pluginRepository>-->
+<!--    </pluginRepositories>-->
     <repositories>
         <!-- Shared Mule Services Repository -->
         <repository>

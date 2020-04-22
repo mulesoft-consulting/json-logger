@@ -9,19 +9,23 @@
         "applicationName": {
           "type": "string",
           "sdk": {
-            "default": "${json.logger.application.name}"
+            "default": "${json.logger.application.name}",
+            "summary": "Name of the Mule application. Recommendation: This value should be based on pom.xml"
           }
         },
         "applicationVersion": {
           "type": "string",
           "sdk": {
-            "default": "${json.logger.application.version}"
+            "default": "${json.logger.application.version}",
+            "summary": "Version of the Mule application. Recommendation: This value should be based on pom.xml"
           }
         },
         "environment": {
           "type": "string",
           "sdk": {
-            "default": "${mule.env}"
+            "required": true,
+            "example": "${mule.env}",
+            "summary": "Name of the Mule Environment where the application is running. Recommendation: This value should be based on external property"
           }
         }
       },
@@ -69,10 +73,20 @@
         "disabledFields": {
           "type": "string",
           "sdk": {
-            "summary": "Indicate which fields should be disabled from logging separated by comma. They should match the exact name given in loggerProcessor.json schema",
-            "example": "e.g. message, content",
+            "summary": "Indicate which fields (from JSON output) should be disabled from logging separated by comma. They should match the exact name given in loggerProcessor.json schema",
+            "example": "message,content",
             "required": false,
-            "expressionSupport": "REQUIRED"
+            "expressionSupport": "NOT_SUPPORTED"
+          },
+          "note": "This field is mandatory. DON'T REMOVE"
+        },
+        "contentFieldsDataMasking": {
+          "type": "string",
+          "sdk": {
+            "summary": "Indicate which fields (inside a content type with JSON output only) should be masked before from logging separated by comma. They can be JSON keys or JSON paths. If empty, no masking will be applied. Recommendation: This value should be based on external property",
+            "example": "client_secret,password,$.myArray[1].someField,$..path.to.a.field",
+            "required": false,
+            "expressionSupport": "NOT_SUPPORTED"
           },
           "note": "This field is mandatory. DON'T REMOVE"
         }

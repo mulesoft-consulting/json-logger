@@ -4,6 +4,7 @@ import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extensions.jms.api.message.JmsMessageBuilder;
 import org.mule.extensions.jms.api.message.JmsxProperties;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -36,6 +37,7 @@ public class JMSDestination implements Destination {
 
     @Parameter
     @Optional
+    @NullSafe
     @Summary("Indicate which log categories should be send (e.g. [\"my.category\",\"another.category\"]). If empty, all will be send.")
     @DisplayName("Log Categories")
     private ArrayList<String> logCategories;

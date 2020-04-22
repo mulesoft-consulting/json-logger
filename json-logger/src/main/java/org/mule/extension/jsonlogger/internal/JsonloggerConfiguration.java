@@ -3,6 +3,7 @@ package org.mule.extension.jsonlogger.internal;
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
 import org.mule.extension.jsonlogger.internal.destinations.Destination;
 import org.mule.runtime.extension.api.annotation.Operations;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
