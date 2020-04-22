@@ -4,7 +4,7 @@
 # Anypoint Platform Organization ID
 
 # Command should be called as follows:
-# ./deploy.sh some-org-id-value
+# ./deploy.sh YOUR_ANYPOINT_ORG_ID
 
 if [ "$#" -ne 1 ]
 then
@@ -20,18 +20,15 @@ echo "Replacing OrgId token..."
 echo sed -i.bkp "s/ORG_ID_TOKEN/$1/g" json-logger/pom.xml
 sed -i.bkp "s/ORG_ID_TOKEN/$1/g" json-logger/pom.xml
 
-echo sed -i.bkp "s/ORG_ID_TOKEN/$1/g" jsonschema2pojo-mule-annotations/pom.xml
-sed -i.bkp "s/ORG_ID_TOKEN/$1/g" jsonschema2pojo-mule-annotations/pom.xml
+# Installing locally
+echo "Installing jsonschema2pojo-mule-annotations locally..."
 
-# Deploying to Exchange
-echo "Deploying to Exchange..."
-
-echo mvn -f jsonschema2pojo-mule-annotations/pom.xml clean deploy
-mvn -f jsonschema2pojo-mule-annotations/pom.xml clean deploy
+echo mvn -f jsonschema2pojo-mule-annotations/pom.xml clean install
+mvn -f jsonschema2pojo-mule-annotations/pom.xml clean install
 
 if [ $? != 0 ]
 then
-  echo "[ERROR] Failed deploying jsonschema2pojo-mule-annotations to Exchange"
+  echo "[ERROR] Failed to install jsonschema2pojo-mule-annotations locally"
   exit 1
 fi
 
