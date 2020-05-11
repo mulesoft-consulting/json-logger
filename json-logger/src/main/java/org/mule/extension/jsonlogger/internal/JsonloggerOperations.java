@@ -1,6 +1,5 @@
 package org.mule.extension.jsonlogger.internal;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.beanutils.BeanUtils;
@@ -10,6 +9,8 @@ import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint;
 import org.mule.extension.jsonlogger.internal.datamask.JsonMasker;
+import org.mule.extension.jsonlogger.internal.singleton.ExternalDestinationsSingleton;
+import org.mule.extension.jsonlogger.internal.singleton.LogEventSingleton;
 import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.Initialisable;
@@ -19,9 +20,11 @@ import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.Config;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.runtime.operation.FlowListener;
 import org.mule.runtime.extension.api.runtime.operation.Result;
@@ -55,6 +58,14 @@ public class JsonloggerOperations implements Initialisable {
     // JSON Object Mapper
     @Inject
     ObjectMapperSingleton om;
+
+    // Log Event for External Destination
+    @Inject
+    LogEventSingleton logEvent;
+
+    // Global definition of externalDestination (from config) so that it's available for scope processor
+    @Inject
+    ExternalDestinationsSingleton externalDestinations;
 
     /**
      * Log a new entry
@@ -199,10 +210,17 @@ public class JsonloggerOperations implements Initialisable {
         String finalLog = printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
 
         /** Forward Log to External Destination **/
-        if (config.getExternalDestination() != null) {
-            if (config.getExternalDestination().getSupportedCategories().isEmpty() || config.getExternalDestination().getSupportedCategories().contains(jsonLogger.getName())) {
+        System.out.println("externalDestination.getDestination(): " + externalDestinations.getDestination(config.getConfigName()));
+        if (externalDestinations.getDestination(config.getConfigName()) != null) { //TODO: Validate if needs nullcheck on externalDestination too
+            System.out.println("externalDestination.getDestination().getSupportedCategories().isEmpty(): " + externalDestinations.getDestination(config.getConfigName()).getSupportedCategories().isEmpty());
+            System.out.println("externalDestination.getDestination().getSupportedCategories().contains(jsonLogger.getName()): " + externalDestinations.getDestination(config.getConfigName()).getSupportedCategories().contains(jsonLogger.getName()));
+            if (externalDestinations.getDestination(config.getConfigName()).getSupportedCategories().isEmpty() || externalDestinations.getDestination(config.getConfigName()).getSupportedCategories().contains(jsonLogger.getName())) {
                 log.debug(jsonLogger.getName() + " is a supported category for external destination");
-                config.getExternalDestination().sendToExternalDestination(client, finalLog, loggerProcessor.getCorrelationId());
+                //config.getExternalDestination().sendToExternalDestination(client, finalLog, loggerProcessor.getCorrelationId());
+                //config.publishToExternalDestination(loggerProcessor.getCorrelationId(), finalLog);
+                //TODO: Figure out if initialise() in config could prepopulate externalDestionation on singleton for scope processor
+                //TODO: Figure out how to manage event aggregation (maybe a config property?)
+                logEvent.publishToExternalDestination(loggerProcessor.getCorrelationId(), finalLog, config.getConfigName());
             }
         }
 
@@ -217,6 +235,7 @@ public class JsonloggerOperations implements Initialisable {
                             @Optional(defaultValue="OUTBOUND_REQUEST_SCOPE") ScopeTracePoint scopeTracePoint,
                             @Optional(defaultValue="true") boolean locationInfo,
                             @Optional(defaultValue="true") boolean prettyPrint,
+                            @Optional() @Summary("If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category") String category,
                             @Optional(defaultValue="#[correlationId]") @Placement(tab = "Advanced") String correlationId,
                             ComponentLocation location,
                             Chain operations,
@@ -225,6 +244,8 @@ public class JsonloggerOperations implements Initialisable {
         /** BEFORE scope logger **/
 
         Long initialTimestamp = System.currentTimeMillis();
+
+        initLoggerCategory(category);
 
         ObjectNode loggerProcessor = om.getObjectMapper().createObjectNode();
 

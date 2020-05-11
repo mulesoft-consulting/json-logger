@@ -14,6 +14,7 @@ import org.mule.runtime.extension.api.client.DefaultOperationParameters;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.client.OperationParameters;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.mule.runtime.api.metadata.DataType.JSON_STRING;
 
 public class AMQPDestination implements Destination {
+
+    @Inject
+    ExtensionsClient extensionsClient;
 
     @Parameter
     @Optional
@@ -52,7 +56,7 @@ public class AMQPDestination implements Destination {
     }
 
     @Override
-    public void sendToExternalDestination(ExtensionsClient client, String finalLog, String correlationId) {
+    public void sendToExternalDestination(String finalLog) {
         try {
             OperationParameters parameters = DefaultOperationParameters.builder().configName(this.amqpConfigurationRef)
                     .addParameter("exchangeName", this.exchangeDestination)
@@ -60,7 +64,7 @@ public class AMQPDestination implements Destination {
                             .addParameter("body", new TypedValue<>(finalLog, JSON_STRING))
                             .addParameter("properties", new AmqpProperties()))
                     .build();
-            client.executeAsync("AMQP", "publish", parameters);
+            extensionsClient.executeAsync("AMQP", "publish", parameters);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();

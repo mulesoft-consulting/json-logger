@@ -11,5 +11,6 @@ public interface Destination {
 
     public ArrayList<String> getSupportedCategories();
 
-    public void sendToExternalDestination(ExtensionsClient client, String finalLog, String correlationId);
+    public void sendToExternalDestination(String finalLog);
+
 }

@@ -1,6 +1,7 @@
 package org.mule.extension.jsonlogger.internal.destinations;
 
 import com.mulesoft.mq.restclient.api.*;
+import com.mulesoft.mq.restclient.api.exception.PayloadTooLargeException;
 import com.mulesoft.mq.restclient.impl.OAuthCredentials;
 import org.mule.extension.jsonlogger.internal.destinations.amq.client.MuleBasedAnypointMQClientFactory;
 import org.mule.runtime.api.metadata.MediaType;
@@ -13,6 +14,7 @@ import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.http.api.HttpService;
 import org.mule.runtime.http.api.client.HttpClient;
 import org.mule.runtime.http.api.client.HttpClientConfiguration;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +83,36 @@ public class AMQDestination implements Destination {
 
     private final String AMQ_HTTP_CLIENT = "amqHttpClient";
     private final String USER_AGENT_VERSION = "3.1.0"; // Version of the AMQ Connector code this logic is based of
+
+    private HttpClientConfiguration httpClientConfiguration;
+    private HttpClient httpClient;
+    private AnypointMqClient amqClient;
+    private DestinationLocator destinationLocator;
+    private DestinationLocation location;
+
     private static final Logger log = LoggerFactory.getLogger(AMQDestination.class);
+
+    public void init () {
+        System.out.println(">>> INIT STUFF");
+        // Start HTTP Configuration
+        Long startTimestamp = System.currentTimeMillis();
+        this.httpClientConfiguration = new HttpClientConfiguration.Builder()
+                .setName(AMQ_HTTP_CLIENT)
+                .build();
+        this.httpClient = httpService.getClientFactory().create(this.httpClientConfiguration);
+        httpClient.start();
+
+        // Start AMQ Client
+        this.amqClient = new MuleBasedAnypointMQClientFactory(this.httpClient, schedulerService.ioScheduler())
+                .createClient(url, new OAuthCredentials(clientId, clientSecret), USER_AGENT_VERSION);
+        this.amqClient.init();
+
+        // Locate AMQ destination
+        this.destinationLocator = amqClient.createDestinationLocator();
+
+        // Destination Location
+        this.location = this.destinationLocator.getDestinationLocation(queueOrExchangeDestination);
+    }
 
     @Override
     public String getSelectedDestinationType() {
@@ -93,47 +125,32 @@ public class AMQDestination implements Destination {
     }
 
     @Override
-    public void sendToExternalDestination(ExtensionsClient client, String finalLog, String correlationId) {
+    public void sendToExternalDestination(String finalLog) {
+
+        if (amqClient == null) {
+            this.init();
+        }
+
         try {
-            // Start HTTP Configuration
-            HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration.Builder()
-                        .setName(AMQ_HTTP_CLIENT)
-                        .build();
-            HttpClient httpClient = httpService.getClientFactory().create(httpClientConfiguration);
-            httpClient.start();
-
-            // Start AMQ Client
-            AnypointMqClient amqClient = new MuleBasedAnypointMQClientFactory(httpClient, schedulerService.ioScheduler())
-                        .createClient(url, new OAuthCredentials(clientId, clientSecret), USER_AGENT_VERSION);
-            amqClient.init();
-
-            // Locate AMQ destination
-            DestinationLocator destinationLocator = amqClient.createDestinationLocator();
-
             // Send message
             MediaType mediaType = MediaType.parse("application/json; charset=UTF-8");
-
             AnypointMQMessage message = createMessage(finalLog, true, mediaType.toString(),
-                    mediaType.getCharset(), correlationId, new HashMap<>(), null, null);
+                    mediaType.getCharset(), null, new HashMap<>(), null, null);
 
-            DestinationLocation location = destinationLocator.getDestinationLocation(queueOrExchangeDestination);
-
-            destinationLocator.getDestination(location)
+            this.destinationLocator.getDestination(this.location)
                     .send(message)
                     .subscribe(new CourierObserver<MessageIdResult>() {
-
                         @Override
                         public void onSuccess(MessageIdResult result) {
-                            log.debug("Message published successfully: " + result.getMessageId());
+                            log.info("AMQ Message Id: " + result.getMessageId());
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            log.error(String.format("Failed to publish message to destination '%s': %s", queueOrExchangeDestination, e.getMessage()));
-                            e.printStackTrace();
+                            String msg = String.format("Failed to publish message to destination '%s': %s", location, e.getMessage());
+                            log.error(msg, e);
                         }
                     });
-
         } catch (Exception e) {
             log.error("Error sending message to AMQ: " + e.getMessage());
             e.printStackTrace();

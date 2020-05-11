@@ -14,6 +14,7 @@ import org.mule.runtime.extension.api.client.DefaultOperationParameters;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.client.OperationParameters;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.mule.runtime.api.metadata.DataType.JSON_STRING;
 
 public class JMSDestination implements Destination {
+
+    @Inject
+    ExtensionsClient extensionsClient;
 
     @Parameter
     @Optional
@@ -53,7 +57,7 @@ public class JMSDestination implements Destination {
     }
 
     @Override
-    public void sendToExternalDestination(ExtensionsClient client, String finalLog, String correlationId) {
+    public void sendToExternalDestination(String finalLog) { //TODO: REMOVE CLIENT PARAM
         try {
             OperationParameters parameters = DefaultOperationParameters.builder().configName(this.jmsConfigurationRef)
                     .addParameter("destination", this.queueDestination)
@@ -62,7 +66,7 @@ public class JMSDestination implements Destination {
                             .addParameter("jmsxProperties", new JmsxProperties())
                             .addParameter("properties", new HashMap<String, Object>()))
                     .build();
-            client.executeAsync("JMS", "publish", parameters);
+            extensionsClient.executeAsync("JMS", "publish", parameters);
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
