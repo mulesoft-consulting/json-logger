@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cc568b69-a181-4d4c-b044-90054c52897b</groupId>
     <artifactId>json-logger</artifactId>
-    <version>2.0.0-rc46</version>
+    <version>2.0.0-rc02</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
