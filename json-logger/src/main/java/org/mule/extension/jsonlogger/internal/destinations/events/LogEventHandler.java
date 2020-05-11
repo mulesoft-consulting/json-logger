@@ -35,13 +35,11 @@ public class LogEventHandler implements EventHandler<LogEvent> {
         } else {
             aggregatedLogsPerConfig.get(logEvent.getConfigName()).add(logEvent.getLog());
         }
-        //aggregatedLogs.add(logEvent.getLog());
         if (aggregatedLogsPerConfig.get(logEvent.getConfigName()).size() >= 100) {
             System.out.println("Max batch size reached for Config: " + logEvent.getConfigName() + ". Flushing logs...");
             flushLogs(logEvent.getConfigName());
         }
-        if (endOfBatch)
-        {
+        if (endOfBatch) {
             System.out.println("End of batch reached. Flushing all config logs...");
             flushAllLogs();
         }
