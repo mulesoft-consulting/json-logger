@@ -1,7 +1,6 @@
 package org.mule.extension.jsonlogger.internal.destinations;
 
 import com.mulesoft.mq.restclient.api.*;
-import com.mulesoft.mq.restclient.api.exception.PayloadTooLargeException;
 import com.mulesoft.mq.restclient.impl.OAuthCredentials;
 import org.mule.extension.jsonlogger.internal.destinations.amq.client.MuleBasedAnypointMQClientFactory;
 import org.mule.runtime.api.metadata.MediaType;
@@ -13,8 +12,6 @@ import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Password;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
-import org.mule.runtime.extension.api.client.ExtensionsClient;
-import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.http.api.HttpService;
 import org.mule.runtime.http.api.client.HttpClient;
 import org.mule.runtime.http.api.client.HttpClientConfiguration;
@@ -23,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +27,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class AMQDestination implements Destination {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AMQDestination.class);
 
     @Parameter
     @Optional
@@ -75,6 +73,17 @@ public class AMQDestination implements Destination {
     @DisplayName("Log Categories")
     private ArrayList<String> logCategories;
 
+    @Parameter
+    @Optional(defaultValue = "100")
+    @Summary("Indicate max batch size of logs to be send to the external destination")
+    @DisplayName("Max Batch Size")
+    private int maxBatchSize;
+
+    @Override
+    public int getMaxBatchSize() {
+        return this.maxBatchSize;
+    }
+
     @Inject
     protected HttpService httpService;
 
@@ -90,30 +99,6 @@ public class AMQDestination implements Destination {
     private DestinationLocator destinationLocator;
     private DestinationLocation location;
 
-    private static final Logger log = LoggerFactory.getLogger(AMQDestination.class);
-
-    public void init () {
-        System.out.println(">>> INIT STUFF");
-        // Start HTTP Configuration
-        Long startTimestamp = System.currentTimeMillis();
-        this.httpClientConfiguration = new HttpClientConfiguration.Builder()
-                .setName(AMQ_HTTP_CLIENT)
-                .build();
-        this.httpClient = httpService.getClientFactory().create(this.httpClientConfiguration);
-        httpClient.start();
-
-        // Start AMQ Client
-        this.amqClient = new MuleBasedAnypointMQClientFactory(this.httpClient, schedulerService.ioScheduler())
-                .createClient(url, new OAuthCredentials(clientId, clientSecret), USER_AGENT_VERSION);
-        this.amqClient.init();
-
-        // Locate AMQ destination
-        this.destinationLocator = amqClient.createDestinationLocator();
-
-        // Destination Location
-        this.location = this.destinationLocator.getDestinationLocation(queueOrExchangeDestination);
-    }
-
     @Override
     public String getSelectedDestinationType() {
         return "AMQ";
@@ -127,10 +112,6 @@ public class AMQDestination implements Destination {
     @Override
     public void sendToExternalDestination(String finalLog) {
 
-        if (amqClient == null) {
-            this.init();
-        }
-
         try {
             // Send message
             MediaType mediaType = MediaType.parse("application/json; charset=UTF-8");
@@ -142,17 +123,17 @@ public class AMQDestination implements Destination {
                     .subscribe(new CourierObserver<MessageIdResult>() {
                         @Override
                         public void onSuccess(MessageIdResult result) {
-                            log.info("AMQ Message Id: " + result.getMessageId());
+                            LOGGER.debug("AMQ Message Id: " + result.getMessageId());
                         }
 
                         @Override
                         public void onError(Throwable e) {
                             String msg = String.format("Failed to publish message to destination '%s': %s", location, e.getMessage());
-                            log.error(msg, e);
+                            LOGGER.error(msg, e);
                         }
                     });
         } catch (Exception e) {
-            log.error("Error sending message to AMQ: " + e.getMessage());
+            LOGGER.error("Error sending message to AMQ: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -178,4 +159,31 @@ public class AMQDestination implements Destination {
 
         return messageBuilder.build();
     }
+
+    public void initialise() {
+        // Start HTTP Configuration
+        Long startTimestamp = System.currentTimeMillis();
+        this.httpClientConfiguration = new HttpClientConfiguration.Builder()
+                .setName(AMQ_HTTP_CLIENT)
+                .build();
+        this.httpClient = httpService.getClientFactory().create(this.httpClientConfiguration);
+        httpClient.start();
+
+        // Start AMQ Client
+        this.amqClient = new MuleBasedAnypointMQClientFactory(this.httpClient, schedulerService.ioScheduler())
+                .createClient(url, new OAuthCredentials(clientId, clientSecret), USER_AGENT_VERSION);
+        this.amqClient.init();
+
+        // Locate AMQ destination
+        this.destinationLocator = amqClient.createDestinationLocator();
+
+        // Destination Location
+        this.location = this.destinationLocator.getDestinationLocation(queueOrExchangeDestination);
+    }
+
+    public void dispose() {
+        this.httpClient.stop();
+        this.amqClient.dispose();
+    }
+
 }

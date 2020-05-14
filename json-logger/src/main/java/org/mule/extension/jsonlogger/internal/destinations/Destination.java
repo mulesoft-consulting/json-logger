@@ -11,6 +11,11 @@ public interface Destination {
 
     public ArrayList<String> getSupportedCategories();
 
+    public int getMaxBatchSize();
+
     public void sendToExternalDestination(String finalLog);
 
+    public void initialise();
+
+    public void dispose();
 }

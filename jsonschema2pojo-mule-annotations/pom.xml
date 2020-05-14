@@ -4,7 +4,7 @@
 	<groupId>io.github.mulesoft-consulting</groupId>
 	<artifactId>jsonschema2pojo-mule-annotations</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<name>jsonschema2pojo - Mule SDK Annotations Extension</name>
 	<description>Support for Mule (4.x) Java SDK</description>
 

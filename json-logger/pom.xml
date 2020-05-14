@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ORG_ID_TOKEN</groupId>
     <artifactId>json-logger</artifactId>
-    <version>2.0.0-rc02</version>
+    <version>2.0.0-rcfinal-01</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
@@ -77,7 +77,6 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
@@ -113,11 +112,18 @@
                     <groupId>com.ning</groupId>
                 </exclusion>
             </exclusions>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <version>2.4.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.lmax</groupId>
@@ -125,15 +131,6 @@
             <version>3.4.2</version>
         </dependency>
     </dependencies>
-<!--    <pluginRepositories>-->
-<!--        &lt;!&ndash; Shared Mule Services Plugin Repository &ndash;&gt;-->
-<!--        <pluginRepository>-->
-<!--            <id>Exchange2</id>-->
-<!--            <name>Exchange2 Repository</name>-->
-<!--            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>-->
-<!--            <layout>default</layout>-->
-<!--        </pluginRepository>-->
-<!--    </pluginRepositories>-->
     <repositories>
         <!-- Shared Mule Services Repository -->
         <repository>

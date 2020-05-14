@@ -2,7 +2,8 @@ package org.mule.extension.jsonlogger.internal;
 
 import org.mule.extension.jsonlogger.api.pojos.LoggerConfig;
 import org.mule.extension.jsonlogger.internal.destinations.Destination;
-import org.mule.extension.jsonlogger.internal.singleton.ExternalDestinationsSingleton;
+import org.mule.extension.jsonlogger.internal.singleton.ConfigsSingleton;
+import org.mule.runtime.api.lifecycle.Disposable;
 import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.extension.api.annotation.Operations;
@@ -19,10 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * operations since they represent something core from the extension.
  */
 @Operations(JsonloggerOperations.class)
-public class JsonloggerConfiguration extends LoggerConfig implements Initialisable {
+public class JsonloggerConfiguration extends LoggerConfig implements Initialisable, Disposable {
 
     @Inject
-    ExternalDestinationsSingleton externalDestinationsSingleton;
+    ConfigsSingleton configsSingleton;
 
     @RefName
     private String configName;
@@ -57,19 +58,27 @@ public class JsonloggerConfiguration extends LoggerConfig implements Initialisab
         timers.remove(key);
     }
 
-    /** Init externalDestination and extensionClient **/
-    @Override
-    public void initialise() throws InitialisationException {
-        //TODO: ESTA MIERDA esta haciendo override asi que hay que ver como guardar:
-        // 1. Nombre de la config
-        // 2. Instancia del external destination para cada config
-        if (this.externalDestination != null) {
-            this.externalDestinationsSingleton.addDestination(configName, this.externalDestination);
-        }
-    }
-
+    /** Init configs singleton **/
     public void setExternalDestination(Destination externalDestination) {
         this.externalDestination = externalDestination;
     }
 
+    public Destination getExternalDestination() {
+        return externalDestination;
+    }
+
+    @Override
+    public void initialise() throws InitialisationException {
+        if (this.externalDestination != null) {
+            this.externalDestination.initialise();
+        }
+        configsSingleton.addConfig(configName, this); // Should be refactored once SDK supports passing configs to Scopes
+    }
+
+    @Override
+    public void dispose() {
+        if (this.externalDestination != null) {
+            this.externalDestination.dispose();
+        }
+    }
 }

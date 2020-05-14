@@ -13,6 +13,8 @@ import org.mule.runtime.extension.api.annotation.param.reference.ConfigReference
 import org.mule.runtime.extension.api.client.DefaultOperationParameters;
 import org.mule.runtime.extension.api.client.ExtensionsClient;
 import org.mule.runtime.extension.api.client.OperationParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.mule.runtime.api.metadata.DataType.JSON_STRING;
 
 public class AMQPDestination implements Destination {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AMQPDestination.class);
 
     @Inject
     ExtensionsClient extensionsClient;
@@ -45,6 +49,17 @@ public class AMQPDestination implements Destination {
     @DisplayName("Log Categories")
     private ArrayList<String> logCategories;
 
+    @Parameter
+    @Optional(defaultValue = "100")
+    @Summary("Indicate max batch size of logs to be send to the external destination")
+    @DisplayName("Max Batch Size")
+    private int maxBatchSize;
+
+    @Override
+    public int getMaxBatchSize() {
+        return this.maxBatchSize;
+    }
+
     @Override
     public String getSelectedDestinationType() {
         return "AMQP";
@@ -66,8 +81,18 @@ public class AMQPDestination implements Destination {
                     .build();
             extensionsClient.executeAsync("AMQP", "publish", parameters);
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            LOGGER.error("Error: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void initialise() {
+
+    }
+
+    @Override
+    public void dispose() {
+
     }
 }

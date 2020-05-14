@@ -51,7 +51,7 @@
         <repository>
             <id>Exchange2</id>
             <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/ORG_ID_TOKEN/maven</url>
+            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
             <layout>default</layout>
         </repository>
     </distributionManagement>

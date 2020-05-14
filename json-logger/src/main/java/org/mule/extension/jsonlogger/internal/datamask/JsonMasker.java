@@ -130,25 +130,4 @@ public class JsonMasker {
         return value.replaceAll("[0-9]", "*");
     }
 
-    public static void main(String[] args) throws JsonProcessingException {
-
-        ObjectMapper om = new ObjectMapper()
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
-                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-
-        Collection<String> whitelist = Arrays.asList(
-                // by field name:
-                "phone",
-                "ipAddress",
-                "$.employments[1].salary",
-                "$.some.dummy[1].password"
-        );
-        boolean maskingEnabled = true;
-        JsonMasker masker = new JsonMasker(whitelist, maskingEnabled);
-
-        JsonNode jsonNode = om.readTree("{\n  \"firstName\": \"Noëlla\",\n  \"lastName\": \"Maïté\",\n  \"age\": 26,\n  \"gender\": \"Female\",\n  \"contacts\": {\n    \"email\": \"cbentson7@nbcnews.com\",\n    \"phone\": \"62-(819)562-8538\",\n    \"address\": \"12 Northview Way\"\n  },\n  \"employments\": [\n    {\n      \"companyName\": \"Reynolds-Denesik\",\n      \"startDate\": \"12/7/2016\",\n      \"salary\": \"$150\"\n    }\n,{\n      \"companyName\": \"Mulesoft\",\n      \"startDate\": \"12/7/2018\",\n      \"salary\": \"$550\"\n    }\n  ],\n  \"ipAddress\": \"107.196.186.197\"\n}");
-        JsonNode masked = masker.mask(jsonNode);
-        System.out.println(masked.toPrettyString());
-    }
 }

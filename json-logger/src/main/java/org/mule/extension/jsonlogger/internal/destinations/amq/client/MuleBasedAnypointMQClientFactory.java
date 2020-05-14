@@ -5,7 +5,7 @@
  */
 package org.mule.extension.jsonlogger.internal.destinations.amq.client;
 
-import com.google.common.base.Preconditions;
+//import com.google.common.base.Preconditions;
 import com.mulesoft.mq.restclient.api.AnypointMQClientFactory;
 import com.mulesoft.mq.restclient.api.AnypointMqClient;
 import com.mulesoft.mq.restclient.api.CourierAuthenticationCredentials;
@@ -27,7 +27,7 @@ public class MuleBasedAnypointMQClientFactory implements AnypointMQClientFactory
     @Override
     public AnypointMqClient createClient(String courierApiUrl, CourierAuthenticationCredentials authenticationCredentials,
                                          String userAgentInfo) {
-        Preconditions.checkArgument(authenticationCredentials instanceof OAuthCredentials);
+//        Preconditions.checkArgument(authenticationCredentials instanceof OAuthCredentials);
         return new DefaultAnypointMqClient(new AsyncMuleCourierRestClient(courierApiUrl, OAuthCredentials.class.cast(authenticationCredentials),
                                                                           userAgentInfo, httpClient, scheduler));
     }
