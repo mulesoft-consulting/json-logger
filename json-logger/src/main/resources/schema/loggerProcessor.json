@@ -15,7 +15,7 @@
     "message": {
       "type": "string",
       "sdk": {
-        "example": "Add a log entry",
+        "example": "Add a log message",
         "required": true,
         "summary": "Message to be logged"
       }
@@ -24,8 +24,9 @@
       "type": "string",
       "javaType": "org.mule.runtime.extension.api.runtime.parameter.ParameterResolver<org.mule.runtime.api.metadata.TypedValue<Object>>",
       "sdk": {
-        "default": "#[output application/json ---\n{\n \tpayload: payload,\n \tattributes: attributes\n}]",
-        "summary": "Remove if no content should be logged",
+        "default": "#[import modules::JSONLoggerModule output application/json ---\n{\n    payload: JSONLoggerModule::stringifyNonJSON(payload) \n}]",
+        "summary": "NOTE: Writing the entire payload every time across your application can cause serious performance issues",
+        "required": false,
         "isContent": true
       }
     },

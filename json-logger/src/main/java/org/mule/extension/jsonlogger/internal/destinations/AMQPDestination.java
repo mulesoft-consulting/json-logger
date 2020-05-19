@@ -50,8 +50,8 @@ public class AMQPDestination implements Destination {
     private ArrayList<String> logCategories;
 
     @Parameter
-    @Optional(defaultValue = "100")
-    @Summary("Indicate max batch size of logs to be send to the external destination")
+    @Optional(defaultValue = "25")
+    @Summary("Indicate max quantity of logs entries to be send to the external destination")
     @DisplayName("Max Batch Size")
     private int maxBatchSize;
 
