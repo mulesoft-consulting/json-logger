@@ -276,8 +276,8 @@ public class JsonloggerOperations {
              * ===============================
              **/
             loggerProcessor.put("correlationId", correlationId);
-            loggerProcessor.put("tracePoint", scopeTracePoint.toString());
-            loggerProcessor.put("priority", priority.toString() + "_BEFORE");
+            loggerProcessor.put("tracePoint", scopeTracePoint.toString() + "_BEFORE");
+            loggerProcessor.put("priority", priority.toString());
             loggerProcessor.put("elapsed", Long.toString(elapsed));
             loggerProcessor.put("scopeElapsed", 0);
             if (configs.getConfig(configurationRef).getJsonOutput().isLogLocationInfo()) {
@@ -310,7 +310,8 @@ public class JsonloggerOperations {
                         Long scopeElapsed = endScopeTimestamp - loggerTimestamp;
                         Long mainElapsed = endScopeTimestamp - finalInitialTimestamp;
 
-                        loggerProcessor.put("priority", priority.toString() + "_AFTER");
+                        loggerProcessor.put("tracePoint", scopeTracePoint.toString() + "_AFTER");
+                        loggerProcessor.put("priority", priority.toString());
                         loggerProcessor.put("elapsed", Long.toString(mainElapsed));
                         loggerProcessor.put("scopeElapsed", scopeElapsed);
                         loggerProcessor.put("timestamp", getFormattedTimestamp(endScopeTimestamp));
