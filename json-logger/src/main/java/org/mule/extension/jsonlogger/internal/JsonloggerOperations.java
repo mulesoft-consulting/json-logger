@@ -180,7 +180,7 @@ public class JsonloggerOperations {
              * This will take place after LoggerProcessor ordering which is defined by the field sequence in loggerProcessor.json
              **/
             // 1. Elapsed Time
-            mergedLogger.put("elapsed", Long.toString(elapsed));
+            mergedLogger.put("elapsed", elapsed);
             // 2. Location Info: Logger location within Mule application
             if (config.getJsonOutput().isLogLocationInfo()) {
                 Map<String, String> locationInfo = locationInfoToMap(location);
@@ -278,7 +278,7 @@ public class JsonloggerOperations {
             loggerProcessor.put("correlationId", correlationId);
             loggerProcessor.put("tracePoint", scopeTracePoint.toString() + "_BEFORE");
             loggerProcessor.put("priority", priority.toString());
-            loggerProcessor.put("elapsed", Long.toString(elapsed));
+            loggerProcessor.put("elapsed", elapsed);
             loggerProcessor.put("scopeElapsed", 0);
             if (configs.getConfig(configurationRef).getJsonOutput().isLogLocationInfo()) {
                 Map<String, String> locationInfoMap = locationInfoToMap(location);
@@ -312,7 +312,7 @@ public class JsonloggerOperations {
 
                         loggerProcessor.put("tracePoint", scopeTracePoint.toString() + "_AFTER");
                         loggerProcessor.put("priority", priority.toString());
-                        loggerProcessor.put("elapsed", Long.toString(mainElapsed));
+                        loggerProcessor.put("elapsed", mainElapsed);
                         loggerProcessor.put("scopeElapsed", scopeElapsed);
                         loggerProcessor.put("timestamp", getFormattedTimestamp(endScopeTimestamp));
 
@@ -339,7 +339,7 @@ public class JsonloggerOperations {
                         loggerProcessor.put("message", "Error found: " + error.getMessage());
                         loggerProcessor.put("tracePoint", "EXCEPTION_SCOPE");
                         loggerProcessor.put("priority", "ERROR");
-                        loggerProcessor.put("elapsed", Long.toString(mainElapsed));
+                        loggerProcessor.put("elapsed", mainElapsed);
                         loggerProcessor.put("scopeElapsed", scopeElapsed);
                         loggerProcessor.put("timestamp", getFormattedTimestamp(errorScopeTimestamp));
 
