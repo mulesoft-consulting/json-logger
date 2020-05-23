@@ -30,7 +30,7 @@ fun stringifyNonJSONWithMetadata(inputData: Any) = {
 												 data: if (inputData.^mimeType == "application/xml" or
 														   inputData.^mimeType == "application/dw")
 														 write(inputData,inputData.^mimeType,{indent:false})
-													   else if (inputData.^mimeType == "application/json")
+													   else if (inputData.^mimeType == "application/json" or inputData.^mimeType == "*/*")
 													   	 inputData
 													   else
 													     write(inputData,inputData.^mimeType),													

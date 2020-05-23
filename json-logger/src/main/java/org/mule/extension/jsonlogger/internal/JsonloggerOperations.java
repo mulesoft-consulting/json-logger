@@ -20,6 +20,7 @@ import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
+import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.runtime.operation.FlowListener;
@@ -225,7 +226,7 @@ public class JsonloggerOperations {
      * Log scope
      */
     @Execution(ExecutionType.BLOCKING)
-    public void loggerScope(@Optional(defaultValue="JSON_Logger_Config") @DisplayName("Module configuration") String configurationRef,
+    public void loggerScope(@DisplayName("Module configuration") @Example("JSON_Logger_Config") String configurationRef,
                             @Optional(defaultValue="INFO") Priority priority,
                             @Optional(defaultValue="OUTBOUND_REQUEST_SCOPE") ScopeTracePoint scopeTracePoint,
                             @Optional @Summary("If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category") String category,
