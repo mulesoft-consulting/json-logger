@@ -226,7 +226,7 @@ public class JsonloggerOperations {
      * Log scope
      */
     @Execution(ExecutionType.BLOCKING)
-    public void loggerScope(@DisplayName("Module configuration") @Example("JSON_Logger_Config") String configurationRef,
+    public void loggerScope(@DisplayName("Module configuration") @Example("JSON_Logger_Config") @Summary("Indicate which Global config should be associated with this Scope.") String configurationRef,
                             @Optional(defaultValue="INFO") Priority priority,
                             @Optional(defaultValue="OUTBOUND_REQUEST_SCOPE") ScopeTracePoint scopeTracePoint,
                             @Optional @Summary("If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category") String category,
