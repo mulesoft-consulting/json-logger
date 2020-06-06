@@ -1,0 +1,24 @@
+{
+  "balance": "$1,611.66",
+  "age": 28,
+  "name": "Avila Padilla",
+  "gender": "male",
+  "company": "SENTIA",
+  "email": "avilapadilla@sentia.com",
+  "phone": "+1 (935) 409-2876",
+  "addresses": [{
+    "street_number": "111",
+    "street_name": "Sesame st",
+    "state": "AA"
+  },{
+    "street_number": "222",
+    "street_name": "Sesame st",
+    "state": "BB"
+  },{
+    "street_number": "333",
+    "street_name": "Sesame st",
+    "state": "CC"
+  }]
+}
+
+

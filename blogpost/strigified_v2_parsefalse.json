@@ -1,0 +1,20 @@
+{
+  "correlationId" : "8c2fe100-a1fc-11ea-9a08-f01898696750",
+  "message" : "Message received",
+  "tracePoint" : "START",
+  "priority" : "INFO",
+  "elapsed" : 0,
+  "locationInfo" : {
+    "lineInFile" : "55",
+    "component" : "json-logger:logger",
+    "fileName" : "test-json-logger-basic.xml",
+    "rootContainer" : "test-json-basic"
+  },
+  "timestamp" : "2020-05-29T22:34:24.442Z",
+  "content" : "{\n  \"payload\": {\n    \"_id\": \"5e9f57d7f7a3ddd837007857\",\n    \"index\": 0,\n    \"guid\": \"bab190b0-61a7-4937-a38f-dbf3ee6de808\",\n    \"isActive\": false,\n    \"balance\": \"$1,611.66\",\n    \"picture\": \"http://placehold.it/32x32\",\n    \"age\": 28,\n    \"eyeColor\": \"green\",\n    \"name\": \"Avila Padilla\",\n    \"gender\": \"male\",\n    \"company\": \"SENTIA\",\n    \"email\": \"avilapadilla@sentia.com\",\n    \"phone\": \"+1 (935) 409-2876\",\n    \"address\": \"414 Jefferson Avenue, Trucksville, Mississippi, 5972\",\n    \"about\": \"Eu exercitation dolore reprehenderit excepteur ullamco aliquip. Excepteur elit officia dolor eu excepteur et sit non laborum duis id culpa reprehenderit. Non est cupidatat laborum occaecat ad esse consectetur cupidatat incididunt mollit. Officia Lorem nisi reprehenderit sint irure laboris incididunt nisi pariatur fugiat. Proident velit sit duis mollit incididunt labore sunt dolore non proident irure minim et reprehenderit.\\r\\n\",\n    \"registered\": \"2014-05-26T02:45:32 +07:00\"\n  }\n}",
+  "applicationName" : "test-json-logger",
+  "applicationVersion" : "1.0.0-SNAPSHOT",
+  "environment" : "local",
+  "threadName" : "[MuleRuntime].uber.01: [test-json-logger].test-json-basic.BLOCKING @3ed4a508"
+}
+

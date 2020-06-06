@@ -1,0 +1,44 @@
+{
+  "correlationId" : "2660df70-a524-11ea-a34f-f01898696750",
+  "message" : "Message received",
+  "tracePoint" : "START",
+  "priority" : "INFO",
+  "elapsed" : 0,
+  "locationInfo" : {
+    "lineInFile" : "160",
+    "component" : "json-logger:logger",
+    "fileName" : "test-json-logger-basic.xml",
+    "rootContainer" : "test-json-datamasking"
+  },
+  "timestamp" : "2020-06-02T22:55:26.991Z",
+  "content" : {
+    "payload" : {
+      "balance" : "$1,611.66",
+      "age" : 28,
+      "name" : "Xxxxx Xxxxxxx",
+      "gender" : "male",
+      "company" : "SENTIA",
+      "email" : "xxxxxxxxxxxx@xxxxxx.xxx",
+      "phone" : "+* (***) ***-****",
+      "addresses" : [ {
+        "street_number" : "111",
+        "street_name" : "Sesame st",
+        "state" : "XX"
+      }, {
+        "street_number" : "***",
+        "street_name" : "Xxxxxx xx",
+        "state" : "XX"
+      }, {
+        "street_number" : "333",
+        "street_name" : "Sesame st",
+        "state" : "XX"
+      } ]
+    }
+  },
+  "applicationName" : "test-json-logger",
+  "applicationVersion" : "1.0.0-SNAPSHOT",
+  "environment" : "datamasking",
+  "threadName" : "[MuleRuntime].uber.07: [test-json-logger].test-json-datamasking.BLOCKING @71ebeb62"
+}
+
+

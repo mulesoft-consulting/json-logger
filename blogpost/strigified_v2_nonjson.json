@@ -1,0 +1,22 @@
+{
+  "correlationId" : "24c2e5f0-a1fa-11ea-8918-f01898696750",
+  "message" : "Doing more stuff",
+  "tracePoint" : "AFTER_TRANSFORM",
+  "priority" : "INFO",
+  "elapsed" : 344,
+  "locationInfo" : {
+    "lineInFile" : "95",
+    "component" : "json-logger:logger",
+    "fileName" : "test-json-logger-basic.xml",
+    "rootContainer" : "test-json-basic"
+  },
+  "timestamp" : "2020-05-29T22:17:12.274Z",
+  "content" : {
+    "payload" : "<?xml version='1.0' encoding='UTF-8'?><rootXML><payload><_id>5e9f57d7f7a3ddd837007857</_id><index>0</index><guid>bab190b0-61a7-4937-a38f-dbf3ee6de808</guid><isActive>false</isActive><balance>$1,611.66</balance><picture>http://placehold.it/32x32</picture><age>28</age><eyeColor>green</eyeColor><name>Avila Padilla</name><gender>male</gender><company>SENTIA</company><email>avilapadilla@sentia.com</email><phone>+1 (935) 409-2876</phone><address>414 Jefferson Avenue, Trucksville, Mississippi, 5972</address><about>Eu exercitation dolore reprehenderit excepteur ullamco aliquip. Excepteur elit officia dolor eu excepteur et sit non laborum duis id culpa reprehenderit. Non est cupidatat laborum occaecat ad esse consectetur cupidatat incididunt mollit. Officia Lorem nisi reprehenderit sint irure laboris incididunt nisi pariatur fugiat. Proident velit sit duis mollit incididunt labore sunt dolore non proident irure minim et reprehenderit.\n</about><registered>2014-05-26T02:45:32 +07:00</registered></payload></rootXML>"
+  },
+  "applicationName" : "test-json-logger",
+  "applicationVersion" : "1.0.0-SNAPSHOT",
+  "environment" : "basic",
+  "threadName" : "[MuleRuntime].uber.01: [test-json-logger].test-json-basic.BLOCKING @5c2c3628"
+}
+

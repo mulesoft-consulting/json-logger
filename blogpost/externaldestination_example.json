@@ -1,0 +1,42 @@
+[{
+  "correlationId" : "2660df70-a524-11ea-a34f-f01898696750",
+  "message" : "Message received 111",
+  "tracePoint" : "START",
+  "priority" : "INFO",
+  "elapsed" : 0,
+  "locationInfo" : {
+    "lineInFile" : "160",
+    "component" : "json-logger:logger",
+    "fileName" : "test-json-logger-basic.xml",
+    "rootContainer" : "test-json-datamasking"
+  },
+  "timestamp" : "2020-06-02T22:55:26.991Z",
+  "content" : "some content",
+  "applicationName" : "test-json-logger",
+  "applicationVersion" : "1.0.0-SNAPSHOT",
+  "environment" : "datamasking",
+  "threadName" : "[MuleRuntime].uber.07: [test-json-logger].test-json-datamasking.BLOCKING @71ebeb62"
+},{
+  "correlationId" : "2660df70-a524-11ea-a34f-f01898696750",
+  "message" : "Message received 222",
+  "tracePoint" : "END",
+  "priority" : "INFO",
+  "elapsed" : 10,
+  "locationInfo" : {
+    "lineInFile" : "160",
+    "component" : "json-logger:logger",
+    "fileName" : "test-json-logger-basic.xml",
+    "rootContainer" : "test-json-datamasking"
+  },
+  "timestamp" : "2020-06-02T22:55:26.991Z",
+  "content" : "some content",
+  "applicationName" : "test-json-logger",
+  "applicationVersion" : "1.0.0-SNAPSHOT",
+  "environment" : "datamasking",
+  "threadName" : "[MuleRuntime].uber.07: [test-json-logger].test-json-datamasking.BLOCKING @71ebeb62"
+}]
+
+
+
+
+
