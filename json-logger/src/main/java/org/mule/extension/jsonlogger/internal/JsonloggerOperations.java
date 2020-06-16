@@ -213,7 +213,7 @@ public class JsonloggerOperations {
                 LOGGER.debug("config.getExternalDestination().getSupportedCategories().contains(jsonLogger.getName()): " + config.getExternalDestination().getSupportedCategories().contains(jsonLogger.getName()));
                 if (configs.getConfig(config.getConfigName()).getExternalDestination().getSupportedCategories().isEmpty() || config.getExternalDestination().getSupportedCategories().contains(jsonLogger.getName())) {
                     LOGGER.debug(jsonLogger.getName() + " is a supported category for external destination");
-                    logEvent.publishToExternalDestination(loggerProcessor.getCorrelationId(), finalLog, config.getConfigName());
+                    logEvent.publishToExternalDestination(correlationInfo.getEventId(), finalLog, config.getConfigName());
                 }
             }
         } else {
