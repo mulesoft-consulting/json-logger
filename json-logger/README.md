@@ -1,5 +1,10 @@
 # Json-logger Extension
 
+## 2.0.1 version - Release notes
+
+Bug fixes:
+* Added support for large payloads
+
 ## 2.0.0 version - Release notes
 
 New features:
