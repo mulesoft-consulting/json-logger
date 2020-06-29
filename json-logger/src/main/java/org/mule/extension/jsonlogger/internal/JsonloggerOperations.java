@@ -1,6 +1,7 @@
 package org.mule.extension.jsonlogger.internal;
 
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -15,10 +16,12 @@ import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.metadata.TypedValue;
+import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
-import org.mule.runtime.extension.api.annotation.param.*;
+import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
@@ -33,9 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.InputStream;
 import java.util.*;
 
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
+import static org.mule.runtime.api.metadata.DataType.TEXT_STRING;
 
 /**
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
@@ -63,6 +68,10 @@ public class JsonloggerOperations {
     // Global definition of logger configs so that it's available for scope processor (SDK scope doesn't support passing configurations)
     @Inject
     ConfigsSingleton configs;
+
+    // Transformation Service
+    @Inject
+    private TransformationService transformationService;
 
     /**
      * Log a new entry
@@ -107,6 +116,7 @@ public class JsonloggerOperations {
             LOGGER.debug("The following fields will be disabled for logging: " + disabledFields);
 
             // Logic to disable fields and/or parse TypedValues as String for JSON log printing
+            //Map<String, String> typedValuesAsString = new HashMap<>();
             Map<String, String> typedValuesAsString = new HashMap<>();
             Map<String, JsonNode> typedValuesAsJsonNode = new HashMap<>();
             try {
@@ -125,7 +135,7 @@ public class JsonloggerOperations {
                                 }
                                 if (v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
                                     LOGGER.debug("org.mule.runtime.api.metadata.TypedValue type was found for field: " + k);
-                                    TypedValue<Object> typedVal = (TypedValue<Object>) v;
+                                    TypedValue<InputStream> typedVal = (TypedValue<InputStream>) v;
                                     LOGGER.debug("Parsing TypedValue for field " + k);
 
                                     LOGGER.debug("TypedValue MediaType: " + typedVal.getDataType().getMediaType());
@@ -135,7 +145,7 @@ public class JsonloggerOperations {
                                     // Remove unparsed field
                                     BeanUtils.setProperty(loggerProcessor, k, null);
 
-                                    // Evaluate typedValue
+                                    // Evaluate if typedValue is null
                                     if (typedVal.getValue() != null) {
                                         // Should content type field be parsed as part of JSON log?
                                         if (config.getJsonOutput().isParseContentFieldsInJsonOutput()) {
@@ -145,18 +155,18 @@ public class JsonloggerOperations {
                                                 List<String> dataMaskingFields = (config.getJsonOutput().getContentFieldsDataMasking() != null) ? Arrays.asList(config.getJsonOutput().getContentFieldsDataMasking().split(",")) : new ArrayList<>();
                                                 LOGGER.debug("The following JSON keys/paths will be masked for logging: " + dataMaskingFields);
                                                 if (!dataMaskingFields.isEmpty()) {
-                                                    JsonNode tempContentNode = om.getObjectMapper().readTree(typedVal.getValue().toString());
+                                                    JsonNode tempContentNode = om.getObjectMapper().readTree((InputStream)typedVal.getValue());
                                                     JsonMasker masker = new JsonMasker(dataMaskingFields, true);
                                                     JsonNode masked = masker.mask(tempContentNode);
                                                     typedValuesAsJsonNode.put(k, masked);
                                                 } else {
-                                                    typedValuesAsJsonNode.put(k, om.getObjectMapper().readTree(typedVal.getValue().toString()));
+                                                    typedValuesAsJsonNode.put(k, om.getObjectMapper().readTree((InputStream)typedVal.getValue()));
                                                 }
                                             } else {
-                                                typedValuesAsString.put(k, typedVal.getValue().toString());
+                                                typedValuesAsString.put(k, (String) transformationService.transform(typedVal.getValue(), typedVal.getDataType(), TEXT_STRING));
                                             }
                                         } else {
-                                            typedValuesAsString.put(k, typedVal.getValue().toString());
+                                            typedValuesAsString.put(k, (String) transformationService.transform(typedVal.getValue(), typedVal.getDataType(), TEXT_STRING));
                                         }
                                     }
                                 }
