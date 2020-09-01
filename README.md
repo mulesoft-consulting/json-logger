@@ -28,7 +28,7 @@ PART 1: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mul
 
 PART 2: https://blogs.mulesoft.com/dev/api-dev/json-logging-in-mule-4/
 
-Running deploy.sh script will deploy JSON Logger to your Organization's Exchange
+Running the provided deployment script will deploy JSON Logger to your Organization's Exchange:
 >e.g. ./deploy-to-exchange.sh <ANYPOINT_ORG_ID>
 
 PS. You can only use the _deploy.sh_ script once (unless you manually delete the previous asset from your exchange within 7 days of deployment or increase the version in the pom.xml) as you can't deploy the same version to Exchange
