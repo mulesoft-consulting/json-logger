@@ -25,6 +25,7 @@ In a nutshell, by defining the output JSON schema as well as providing some addi
 Please check these blogposts for more details:
 
 PART 1: https://blogs.mulesoft.com/dev/anypoint-platform-dev/json-logging-in-mule-4-getting-the-most-out-of-your-logs/
+
 PART 2: https://blogs.mulesoft.com/dev/api-dev/json-logging-in-mule-4/
 
 Running deploy.sh script will deploy JSON Logger to your Organization's Exchange
