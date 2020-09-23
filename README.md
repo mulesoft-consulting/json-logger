@@ -38,3 +38,7 @@ PS. You can only use the _deploy.sh_ script once (unless you manually delete the
 ## Author
 
 * **Andres Ramirez** [Slack: @andres.ramirez / Email: andres.ramirez@mulesoft.com]
+
+## Support disclaimer
+
+In case you haven't noticed the type of license for the source code, this is provided as a side project under MIT open source license which means it won't be officially supported by MuleSoft as it is considered a custom connector. 
