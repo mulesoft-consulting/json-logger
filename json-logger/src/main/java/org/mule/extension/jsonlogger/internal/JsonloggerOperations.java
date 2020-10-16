@@ -7,7 +7,19 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.joda.time.DateTime;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorAfter;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorBefore;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorStart;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorException;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorEnd;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorFlow;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
+import org.mule.extension.jsonlogger.api.pojos.AfterPriority;
+import org.mule.extension.jsonlogger.api.pojos.BeforePriority;
+import org.mule.extension.jsonlogger.api.pojos.FlowPriority;
+import org.mule.extension.jsonlogger.api.pojos.TracePoint;
+import org.mule.extension.jsonlogger.api.pojos.AfterTracePoint;
+import org.mule.extension.jsonlogger.api.pojos.BeforeTracePoint;
 import org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint;
 import org.mule.extension.jsonlogger.internal.datamask.JsonMasker;
 import org.mule.extension.jsonlogger.internal.singleton.ConfigsSingleton;
@@ -233,6 +245,138 @@ public class JsonloggerOperations {
             LOGGER.debug("Avoiding logger operation logic execution due to log priority not being enabled");
         }
         callback.success(VOID_RESULT);
+    }
+
+    /**
+     * Log the START tracepoint at INFO level
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logStart(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorStart loggerProcessorStart,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorStart.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorStart.getMessage());
+        loggerProcessor.setContent(loggerProcessorStart.getContent());
+        loggerProcessor.setCategory(loggerProcessorStart.getCategory());
+        loggerProcessor.setContent(loggerProcessorStart.getContent());
+        loggerProcessor.setTracePoint(TracePoint.START);
+        loggerProcessor.setPriority(Priority.INFO);
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
+    }
+
+    /**
+     * Log the END tracepoint at the INFO level
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logEnd(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorEnd loggerProcessorEnd,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorEnd.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorEnd.getMessage());
+        loggerProcessor.setContent(loggerProcessorEnd.getContent());
+        loggerProcessor.setCategory(loggerProcessorEnd.getCategory());
+        loggerProcessor.setContent(loggerProcessorEnd.getContent());
+        loggerProcessor.setTracePoint(TracePoint.END);
+        loggerProcessor.setPriority(Priority.INFO);
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
+    }
+
+    /**
+     * Log the BEFORE tracepoint
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logBefore(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorBefore loggerProcessorBefore,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorBefore.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorBefore.getMessage());
+        loggerProcessor.setContent(loggerProcessorBefore.getContent());
+        loggerProcessor.setCategory(loggerProcessorBefore.getCategory());
+        loggerProcessor.setContent(loggerProcessorBefore.getContent());
+        loggerProcessor.setTracePoint(TracePoint.valueOf(loggerProcessorBefore.getTracePoint().toString()));
+        loggerProcessor.setPriority(Priority.valueOf(loggerProcessorBefore.getPriority().toString()));
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
+    }
+
+    /**
+     * Log the AFTER tracepoint
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logAfter(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorAfter loggerProcessorAfter,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorAfter.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorAfter.getMessage());
+        loggerProcessor.setContent(loggerProcessorAfter.getContent());
+        loggerProcessor.setCategory(loggerProcessorAfter.getCategory());
+        loggerProcessor.setContent(loggerProcessorAfter.getContent());
+        loggerProcessor.setTracePoint(TracePoint.valueOf(loggerProcessorAfter.getTracePoint().toString()));
+        loggerProcessor.setPriority(Priority.valueOf(loggerProcessorAfter.getPriority().toString()));
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
+    }
+
+    /**
+     * Log the EXCEPTION tracepoint at the ERROR level
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logException(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorException loggerProcessorException,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorException.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorException.getMessage());
+        loggerProcessor.setContent(loggerProcessorException.getContent());
+        loggerProcessor.setCategory(loggerProcessorException.getCategory());
+        loggerProcessor.setContent(loggerProcessorException.getContent());
+        loggerProcessor.setTracePoint(TracePoint.EXCEPTION);
+        loggerProcessor.setPriority(Priority.ERROR);
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
+    }
+
+    /**
+     * Log the FLOW tracepoint
+     */
+    @Execution(ExecutionType.BLOCKING)
+    public void logFlow(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorFlow loggerProcessorFlow,
+                       CorrelationInfo correlationInfo,
+                       ComponentLocation location,
+                       @Config JsonloggerConfiguration config,
+                       FlowListener flowListener,
+                       CompletionCallback<Void, Void> callback) {
+            
+        LoggerProcessor loggerProcessor = new LoggerProcessor();
+        loggerProcessor.setCorrelationId(loggerProcessorFlow.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorFlow.getMessage());
+        loggerProcessor.setContent(loggerProcessorFlow.getContent());
+        loggerProcessor.setCategory(loggerProcessorFlow.getCategory());
+        loggerProcessor.setContent(loggerProcessorFlow.getContent());
+        loggerProcessor.setTracePoint(TracePoint.FLOW);
+        loggerProcessor.setPriority(Priority.valueOf(loggerProcessorFlow.getPriority().toString()));
+        logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
     }
 
     /**
