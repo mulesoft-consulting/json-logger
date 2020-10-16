@@ -31,7 +31,21 @@ PART 2: https://blogs.mulesoft.com/dev/api-dev/json-logging-in-mule-4/
 Running the provided deployment script will deploy JSON Logger to your Organization's Exchange:
 >e.g. ./deploy-to-exchange.sh <ANYPOINT_ORG_ID>
 
-PS. You can only use the _deploy.sh_ script once (unless you manually delete the previous asset from your exchange within 7 days of deployment or increase the version in the pom.xml) as you can't deploy the same version to Exchange
+PS1. You can only use the _deploy.sh_ script once (unless you manually delete the previous asset from your exchange within 7 days of deployment or increase the version in the pom.xml) as you can't deploy the same version to Exchange
+
+PS2. For EU Control Plane deployment you have to modify the `<distributionManagement>` element inide the json-logger/pom.xml in the following way:
+
+```
+<distributionManagement>
+  <!-- Target Anypoint Organization Repository -->
+    <repository>
+      <id>Exchange2</id>
+        <name>Exchange2 Repository</name>
+        <url>https://maven.eu1.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
+        <layout>default</layout>
+    </repository>
+</distributionManagement>
+```
 
 ##  Release notes [HERE](https://github.com/mulesoft-consulting/json-logger/blob/mule-4.x/json-logger/README.md)
 

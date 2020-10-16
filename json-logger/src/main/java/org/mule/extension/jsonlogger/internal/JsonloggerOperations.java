@@ -89,9 +89,12 @@ public class JsonloggerOperations {
 
         initLoggerCategory(loggerProcessor.getCategory());
 
+        LOGGER.debug("correlationInfo.getEventId(): " + correlationInfo.getEventId());
+        LOGGER.debug("correlationInfo.getCorrelationId(): " + correlationInfo.getCorrelationId());
+
         try {
             // Add cache entry for initial timestamp based on unique EventId
-            initialTimestamp = config.getCachedTimerTimestamp(correlationInfo.getEventId(), initialTimestamp);
+            initialTimestamp = config.getCachedTimerTimestamp(correlationInfo.getCorrelationId(), initialTimestamp);
         } catch (Exception e) {
             LOGGER.error("initialTimestamp could not be retrieved from the cache config. Defaulting to current System.currentTimeMillis()", e);
         }
@@ -102,7 +105,7 @@ public class JsonloggerOperations {
         //config.printTimersKeys();
         if (elapsed == 0) {
             LOGGER.debug("configuring flowListener....");
-            flowListener.onComplete(new TimerRemoverRunnable(correlationInfo.getEventId(), config));
+            flowListener.onComplete(new TimerRemoverRunnable(correlationInfo.getCorrelationId(), config));
         } else {
             LOGGER.debug("flowListener already configured");
         }
@@ -257,9 +260,12 @@ public class JsonloggerOperations {
 
         initLoggerCategory(category);
 
+        LOGGER.debug("correlationInfo.getEventId(): " + correlationInfo.getEventId());
+        LOGGER.debug("correlationInfo.getCorrelationId(): " + correlationInfo.getCorrelationId());
+
         try {
             // Add cache entry for initial timestamp based on unique EventId
-            initialTimestamp = configs.getConfig(configurationRef).getCachedTimerTimestamp(correlationInfo.getEventId(), initialTimestamp);
+            initialTimestamp = configs.getConfig(configurationRef).getCachedTimerTimestamp(correlationInfo.getCorrelationId(), initialTimestamp);
         } catch (Exception e) {
             LOGGER.error("initialTimestamp could not be retrieved from the cache config. Defaulting to current System.currentTimeMillis()", e);
         }
@@ -270,7 +276,7 @@ public class JsonloggerOperations {
         //config.printTimersKeys();
         if (elapsed == 0) {
             LOGGER.debug("configuring flowListener....");
-            flowListener.onComplete(new TimerRemoverRunnable(correlationInfo.getEventId(), configs.getConfig(configurationRef)));
+            flowListener.onComplete(new TimerRemoverRunnable(correlationInfo.getCorrelationId(), configs.getConfig(configurationRef)));
         } else {
             LOGGER.debug("flowListener already configured");
         }
