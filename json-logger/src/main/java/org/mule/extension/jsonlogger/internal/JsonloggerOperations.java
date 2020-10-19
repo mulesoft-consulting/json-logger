@@ -10,7 +10,7 @@ import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorAfter;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorBefore;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorStart;
-import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorException;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorError;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorEnd;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessorFlow;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
@@ -339,7 +339,7 @@ public class JsonloggerOperations {
      * Log the EXCEPTION tracepoint at the ERROR level
      */
     @Execution(ExecutionType.BLOCKING)
-    public void logException(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorException loggerProcessorException,
+    public void logError(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessorError loggerProcessorError,
                        CorrelationInfo correlationInfo,
                        ComponentLocation location,
                        @Config JsonloggerConfiguration config,
@@ -347,11 +347,11 @@ public class JsonloggerOperations {
                        CompletionCallback<Void, Void> callback) {
             
         LoggerProcessor loggerProcessor = new LoggerProcessor();
-        loggerProcessor.setCorrelationId(loggerProcessorException.getCorrelationId());
-        loggerProcessor.setMessage(loggerProcessorException.getMessage());
-        loggerProcessor.setContent(loggerProcessorException.getContent());
-        loggerProcessor.setCategory(loggerProcessorException.getCategory());
-        loggerProcessor.setContent(loggerProcessorException.getContent());
+        loggerProcessor.setCorrelationId(loggerProcessorError.getCorrelationId());
+        loggerProcessor.setMessage(loggerProcessorError.getMessage());
+        loggerProcessor.setContent(loggerProcessorError.getContent());
+        loggerProcessor.setCategory(loggerProcessorError.getCategory());
+        loggerProcessor.setContent(loggerProcessorError.getContent());
         loggerProcessor.setTracePoint(TracePoint.EXCEPTION);
         loggerProcessor.setPriority(Priority.ERROR);
         logger(loggerProcessor, correlationInfo, location, config, flowListener, callback);
