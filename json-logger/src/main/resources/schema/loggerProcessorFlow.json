@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Definition for fields used in the logger message processor",
+  "type": "object",
+  "properties": {
+    "correlationId": {
+      "type": "string",
+      "sdk": {
+        "default": "#[correlationId]",
+        "placement": {
+          "tab": "Advanced"
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "sdk": {
+        "example": "Add a log message",
+        "required": true,
+        "summary": "Message to be logged"
+      }
+    },
+    "content": {
+      "type": "string",
+      "javaType": "org.mule.runtime.extension.api.runtime.parameter.ParameterResolver<org.mule.runtime.api.metadata.TypedValue<java.io.InputStream>>",
+      "sdk": {
+        "default": "#[import modules::JSONLoggerModule output application/json ---\n{\n    payload: JSONLoggerModule::stringifyNonJSON(payload) \n}]",
+        "summary": "NOTE: Writing the entire payload every time across your application can cause serious performance issues",
+        "required": false,
+        "isContent": true
+      }
+    },
+    "priority": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.FlowPriority",
+      "enum": [
+        "DEBUG",
+        "TRACE",
+        "INFO",
+        "WARN"
+      ],
+      "sdk": {
+        "default": "INFO",
+        "summary": "Logger priority"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
+    },
+    "category": {
+      "type": "string",
+      "sdk": {
+        "required": false,
+        "summary": "If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
+    }
+  }
+}
