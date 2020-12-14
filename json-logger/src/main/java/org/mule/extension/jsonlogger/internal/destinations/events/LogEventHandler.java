@@ -2,21 +2,20 @@ package org.mule.extension.jsonlogger.internal.destinations.events;
 
 import com.lmax.disruptor.EventHandler;
 import org.mule.extension.jsonlogger.internal.destinations.Destination;
-import org.mule.extension.jsonlogger.internal.singleton.LogEventSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class LogEventHandler implements EventHandler<LogEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogEventHandler.class);
 
-    private Map<String,List<String>> aggregatedLogsPerConfig = new HashMap<String, List<String>>();
-    private Map<String, Destination> destinations = new HashMap<String, Destination>();
+    private Map<String,List<String>> aggregatedLogsPerConfig = new ConcurrentHashMap<String, List<String>>();
+    private Map<String, Destination> destinations = new ConcurrentHashMap<String, Destination>();
 
     public LogEventHandler (Map<String, Destination> destinations) {
         this.destinations = destinations;
@@ -24,13 +23,23 @@ public class LogEventHandler implements EventHandler<LogEvent> {
 
     public void onEvent(LogEvent logEvent, long sequence, boolean endOfBatch) {
         LOGGER.debug("Event Log received with correlationId: " + logEvent.getCorrelationId());
-        if (aggregatedLogsPerConfig.get(logEvent.getConfigName()) == null){
-            List<String> aggregatedLogs = new ArrayList<>();
-            aggregatedLogs.add(logEvent.getLog());
-            aggregatedLogsPerConfig.put(logEvent.getConfigName(), aggregatedLogs);
-        } else {
+        // Log aggregation logic
+//        if (aggregatedLogsPerConfig.get(logEvent.getConfigName()) == null){
+//            List<String> aggregatedLogs = new CopyOnWriteArrayList<>();
+//            aggregatedLogs.add(logEvent.getLog());
+//            aggregatedLogsPerConfig.putIfAbsent(logEvent.getConfigName(), aggregatedLogs);
+//        } else {
+//            aggregatedLogsPerConfig.get(logEvent.getConfigName()).add(logEvent.getLog());
+//        }
+        // Log aggregation logic (new)
+        LOGGER.debug(">> Attempt to make this thread safe...");
+        List<String> aggregatedLogs = new CopyOnWriteArrayList<>();
+        aggregatedLogs.add(logEvent.getLog());
+        if (aggregatedLogsPerConfig.putIfAbsent(logEvent.getConfigName(), aggregatedLogs) != null) {
             aggregatedLogsPerConfig.get(logEvent.getConfigName()).add(logEvent.getLog());
         }
+
+        // Log flush logic
         if (aggregatedLogsPerConfig.get(logEvent.getConfigName()).size() >= destinations.get(logEvent.getConfigName()).getMaxBatchSize()) {
             LOGGER.debug("Max batch size of " + destinations.get(logEvent.getConfigName()).getMaxBatchSize() + " reached for Config: " + logEvent.getConfigName() + ". Flushing logs...");
             flushLogs(logEvent.getConfigName());
