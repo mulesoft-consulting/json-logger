@@ -1,0 +1,19 @@
+{
+  "data": {
+    "type": "articles",
+    "id": "1",
+    "relationships": {
+      "author": {
+        "data": {
+          "id": "42",
+          "type": "people"
+        }
+      }
+    }
+  },
+  "attributes": {
+    "name": "John",
+    "phone": "888-900-0000",
+    "gender": "male"
+  }
+}

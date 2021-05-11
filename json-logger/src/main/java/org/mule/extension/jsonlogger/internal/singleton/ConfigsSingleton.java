@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ConfigsSingleton {
 
-    private Map<String, JsonloggerConfiguration> configs = new HashMap<String, JsonloggerConfiguration>();
+    private final Map<String, JsonloggerConfiguration> configs = new HashMap<>();
 
     public Map<String, JsonloggerConfiguration> getConfigs() {
         return configs;

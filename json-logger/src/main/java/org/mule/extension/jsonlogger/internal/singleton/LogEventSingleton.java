@@ -31,7 +31,7 @@ public class LogEventSingleton implements Initialisable, Disposable {
     @Inject
     ConfigsSingleton configs;
 
-    private HashMap<String, Destination> destinations = new HashMap<String, Destination>();
+    private HashMap<String, Destination> destinations = new HashMap<>();
 
     // Construct the Disruptor
     private Disruptor<LogEvent> disruptor;
