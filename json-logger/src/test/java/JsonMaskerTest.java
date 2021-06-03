@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
+import org.mule.runtime.api.metadata.DataType;
+import org.mule.runtime.api.metadata.TypedValue;
 
 import java.io.IOException;
 import java.io.InputStream;
