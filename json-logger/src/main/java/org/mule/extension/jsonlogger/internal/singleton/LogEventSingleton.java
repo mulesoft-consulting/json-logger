@@ -7,7 +7,7 @@ import org.mule.runtime.api.lifecycle.InitialisationException;
 public class LogEventSingleton implements Initialisable, Disposable {
   
   @Override
-  public void initialise() throws InitialisationException {
+  public void initialise() {
   }
   
   @Override

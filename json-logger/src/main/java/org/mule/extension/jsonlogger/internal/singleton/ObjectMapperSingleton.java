@@ -19,4 +19,8 @@ public class ObjectMapperSingleton {
     this.om.registerModule(module);
     return this.om;
   }
+  
+  public ObjectMapper getObjectMapper() {
+    return this.om;
+  }
 }
