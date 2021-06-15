@@ -15,6 +15,7 @@
     "message": {
       "type": "string",
       "sdk": {
+        "default": "",
         "example": "Add a log message",
         "required": true,
         "summary": "Message to be logged"
@@ -67,6 +68,7 @@
     "category": {
       "type": "string",
       "sdk": {
+        "default": "org.mule.extension.jsonlogger.JsonLogger",
         "required": false,
         "summary": "If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category"
       },

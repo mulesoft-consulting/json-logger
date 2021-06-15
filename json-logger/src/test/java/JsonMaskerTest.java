@@ -2,13 +2,16 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
 import org.mule.runtime.api.metadata.TypedValue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +31,13 @@ public class JsonMaskerTest {
   }
   
   @Test
-  public void typedValue() {
-    // check number of file descriptors here
-    someMethod();
-    // check number of file descriptors here
+  public void typedValue() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    LoggerProcessor loggerProcessor = new LoggerProcessor();
+    Map<String, Object> describe = PropertyUtils.describe(loggerProcessor);
+    describe.forEach((k,v) -> {
+      System.out.println(k);
+    });
   }
   
-  private void someMethod() {
-    //open streams here
-  }
+  
 }

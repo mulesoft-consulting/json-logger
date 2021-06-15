@@ -13,6 +13,6 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 @Extension(name = "JSON Logger")
 @Export(resources = {"modules/JSONLoggerModule.dwl"})
 @Configurations(JsonloggerConfiguration.class)
-public class JsonloggerExtension {
+public class JsonLoggerExtension {
 
 }

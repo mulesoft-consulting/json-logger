@@ -1,15 +1,14 @@
 package org.mule.extension.jsonlogger.internal;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.joda.time.DateTime;
 import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
 import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
+import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -25,9 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,7 @@ import static org.mule.runtime.api.metadata.DataType.TEXT_STRING;
 
 public class JsonloggerOperations {
   
-  protected transient Logger jsonLogger;
+  protected transient Logger jsonLogger = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonloggerOperations.class);
   
   // Void Result for NIO
@@ -56,8 +54,6 @@ public class JsonloggerOperations {
                      @Config JsonloggerConfiguration config,
                      CompletionCallback<Void, Void> callback) {
     
-    initLoggerCategory(loggerProcessor.getCategory());
-    
     if (!isLogEnabled(loggerProcessor.getPriority().toString())) {
       callback.success(VOID_RESULT);
       return;
@@ -66,85 +62,16 @@ public class JsonloggerOperations {
     Map<String, String> typedValuesAsString = new HashMap<>();
     Map<String, JsonNode> typedValuesAsJsonNode = new HashMap<>();
     
-    Map<String, Object> properties = null;
-    try {
-      properties = PropertyUtils.describe(loggerProcessor);
-    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-      LOGGER.error("", e);
-    }
-    
-    if (properties == null) {
-      callback.success(VOID_RESULT);
-      return;
-    }
-    
-    properties.forEach((k, v) -> {
-      if (v == null) {
-        return;
-      }
-      
-      try {
-        if (v instanceof ParameterResolver) {
-          v = ((ParameterResolver) v).resolve();
-        }
-        
-        if (!v.getClass().getCanonicalName().equals("org.mule.runtime.api.metadata.TypedValue")) {
-          return;
-        }
-        
-        TypedValue<InputStream> typedVal = (TypedValue<InputStream>) v;
-        if (typedVal.getValue() == null) {
-          return;
-        }
-        
-        //TODO: what is this doing
-        BeanUtils.setProperty(loggerProcessor, k, null);
-        
-        if (!config.getJsonOutput().isParseContentFieldsInJsonOutput()) {
-          typedValuesAsString.put(k, (String) transformationService.transform(typedVal.getValue(), typedVal.getDataType(), TEXT_STRING));
-          return;
-        }
-        
-        if (typedVal.getDataType().getMediaType().getPrimaryType().equals("application")
-          && typedVal.getDataType().getMediaType().getSubType().equals("json")) {
-          
-          // Apply masking if needed
-          List<String> dataMaskingFields = new ArrayList<>();
-          if (config.getJsonOutput().getContentFieldsDataMasking() != null) {
-            String[] split = config.getJsonOutput().getContentFieldsDataMasking().split(",");
-            for (String s : split) {
-              dataMaskingFields.add(s.trim());
-            }
-          }
-          
-          if (dataMaskingFields.isEmpty()) {
-            typedValuesAsJsonNode.put(k, om.getObjectMapper().readTree(typedVal.getValue()));
-          } else {
-            JsonNode tempContentNode = om.getObjectMapper(dataMaskingFields).readTree(typedVal.getValue());
-            typedValuesAsJsonNode.put(k, tempContentNode);
-          }
-        } else {
-          typedValuesAsString.put(k, (String) transformationService.transform(typedVal.getValue(), typedVal.getDataType(), TEXT_STRING));
-        }
-        
-      } catch (Exception e) {
-        LOGGER.error("Failed to parse: " + k, e);
-        typedValuesAsString.put(k, "Error parsing expression. See logs for details.");
-      }
-    });
-    
+    parseContent(loggerProcessor.getContent(), config);
     //TODO: Create mapper once
     ObjectNode mergedLogger = om.getObjectMapper().createObjectNode();
     mergedLogger.setAll((ObjectNode) om.getObjectMapper().valueToTree(loggerProcessor));
     
-    mergedLogger.put("elapsed", elapsed);
+    mergedLogger.put("timestamp", getFormattedTimestamp());
     
     if (config.getJsonOutput().isLogLocationInfo()) {
-      Map<String, String> locationInfo = locationInfoToMap(location);
-      mergedLogger.putPOJO("locationInfo", locationInfo);
+      mergedLogger.putPOJO("locationInfo", locationInfoToMap(location));
     }
-    
-    mergedLogger.put("timestamp", getFormattedTimestamp(loggerTimestamp));
     
     if (!typedValuesAsString.isEmpty()) {
       JsonNode typedValuesNode = om.getObjectMapper(new ArrayList<>()).valueToTree(typedValuesAsString);
@@ -160,7 +87,52 @@ public class JsonloggerOperations {
     mergedLogger.put("threadName", Thread.currentThread().getName());
     
     printObjectToLog(mergedLogger, loggerProcessor.getPriority().toString(), config.getJsonOutput().isPrettyPrint());
+    callback.success(VOID_RESULT);
+  }
+  
+  private void parseContent(ParameterResolver<TypedValue<InputStream>> v, JsonloggerConfiguration config) {
+    Map<String, String> typedValuesAsString = new HashMap<>();
+    Map<String, JsonNode> typedValuesAsJsonNode = new HashMap<>();
     
+    TypedValue<InputStream> typedVal = v.resolve();
+    if (typedVal.getValue() == null) {
+      return;
+    }
+    
+    if (!config.getJsonOutput().isParseContentFieldsInJsonOutput() ||
+      !typedVal.getDataType().getMediaType().matches(MediaType.APPLICATION_JSON)) {
+      typedValuesAsString.put(Constants.CONTENT, (String) transformationService.transform(typedVal.getValue(), typedVal.getDataType(), TEXT_STRING));
+      return;
+    }
+    
+    // Apply data masking only if needed
+    ObjectMapper mapper;
+    List<String> dataMaskingFields = null;
+    if (config.getJsonOutput().getContentFieldsDataMasking() != null) {
+      dataMaskingFields = new ArrayList<>();
+      String[] split = config
+        .getJsonOutput()
+        .getContentFieldsDataMasking()
+        .trim()
+        .split(",");
+      
+      for (String s : split) {
+        dataMaskingFields.add(s.trim());
+      }
+      
+    }
+    
+    if (dataMaskingFields == null || dataMaskingFields.isEmpty()) {
+      mapper = om.getObjectMapper();
+    } else {
+      mapper = om.getObjectMapper(dataMaskingFields);
+    }
+    
+    try {
+      typedValuesAsJsonNode.put(Constants.CONTENT, mapper.readTree(typedVal.getValue()));
+    } catch (Exception e) {
+      typedValuesAsString.put(Constants.CONTENT, e.getMessage());
+    }
   }
   
   private Map<String, String> locationInfoToMap(ComponentLocation location) {
@@ -172,16 +144,9 @@ public class JsonloggerOperations {
     return locationInfo;
   }
   
-  private String getFormattedTimestamp(Long loggerTimestamp) {
-    DateTime dateTime = new DateTime(loggerTimestamp)
-      .withZone(org.joda.time.DateTimeZone.forID(System.getProperty("json.logger.timezone", "UTC")));
-    String timestamp;
-    if (System.getProperty("json.logger.dateformat") != null && !System.getProperty("json.logger.dateformat").isEmpty()) {
-      timestamp = dateTime.toString(System.getProperty("json.logger.dateformat"));
-    } else {
-      timestamp = dateTime.toString();
-    }
-    return timestamp;
+  private String getFormattedTimestamp() {
+    Instant now = Instant.now();
+    return now.toString();
   }
   
   private void printObjectToLog(ObjectNode loggerObj, String priority, boolean isPrettyPrint) {
@@ -228,31 +193,5 @@ public class JsonloggerOperations {
         return jsonLogger.isErrorEnabled();
     }
     return false;
-  }
-  
-  protected void initLoggerCategory(String category) {
-    if (category != null) {
-      jsonLogger = LoggerFactory.getLogger(category);
-    } else {
-      jsonLogger = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
-    }
-  }
-  
-  // Allows executing timer cleanup on flowListener onComplete events
-  private static class TimerRemoverRunnable implements Runnable {
-    
-    private final String key;
-    private final JsonloggerConfiguration config;
-    
-    public TimerRemoverRunnable(String key, JsonloggerConfiguration config) {
-      this.key = key;
-      this.config = config;
-    }
-    
-    @Override
-    public void run() {
-      LOGGER.debug("Removing key: " + key);
-      config.removeCachedTimerTimestamp(key);
-    }
   }
 }
