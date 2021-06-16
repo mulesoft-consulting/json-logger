@@ -6,14 +6,14 @@
     "globalSettings": {
       "type": "object",
       "properties": {
-        "applicationName": {
+        "name": {
           "type": "string",
           "sdk": {
             "default": "${json.logger.application.name}",
             "summary": "Name of the Mule application. Recommendation: This value should be based on pom.xml"
           }
         },
-        "applicationVersion": {
+        "version": {
           "type": "string",
           "sdk": {
             "default": "${json.logger.application.version}",
@@ -83,8 +83,8 @@
         "contentFieldsDataMasking": {
           "type": "string",
           "sdk": {
-            "summary": "Indicate which fields (inside a content type with JSON output only) should be masked before from logging separated by comma. They can be JSON keys or JSON paths. If empty, no masking will be applied. Recommendation: This value should be based on external property",
-            "example": "client_secret,password,$.myArray[1].someField,$..path.to.a.field",
+            "summary": "Indicate which fields (inside a content type with JSON output only) should be masked before from logging separated by comma. If empty, no masking will be applied. Recommendation: This value should be based on external property",
+            "example": "client_secret,password",
             "required": false,
             "expressionSupport": "NOT_SUPPORTED"
           },
