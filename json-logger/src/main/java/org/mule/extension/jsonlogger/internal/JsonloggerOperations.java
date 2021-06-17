@@ -3,9 +3,11 @@ package org.mule.extension.jsonlogger.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.mule.extension.jsonlogger.api.pojos.LoggerProcessor;
+import org.mule.extension.jsonlogger.api.pojos.LoggerScopeProcessor;
 import org.mule.extension.jsonlogger.api.pojos.Priority;
 import org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint;
-import org.mule.extension.jsonlogger.internal.singleton.ObjectMapperSingleton;
+import org.mule.extension.jsonlogger.internal.mapper.ObjectMapperSingleton;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.metadata.MediaType;
@@ -16,10 +18,7 @@ import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-import org.mule.runtime.extension.api.annotation.param.display.Example;
 import org.mule.runtime.extension.api.annotation.param.display.Placement;
-import org.mule.runtime.extension.api.annotation.param.display.Summary;
 import org.mule.runtime.extension.api.runtime.operation.FlowListener;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
@@ -31,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.InputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,11 +40,9 @@ import java.util.Map;
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.api.metadata.DataType.TEXT_STRING;
 
-public class JsonloggerOperations {
+public class JsonLoggerOperations {
   
-  protected transient Logger log = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
-  
-  // Void Result for NIO
+  protected static Logger log = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
   private final Result<Void, Void> VOID_RESULT = Result.<Void, Void>builder().build();
   
   @Inject
@@ -53,14 +51,14 @@ public class JsonloggerOperations {
   @Inject
   private TransformationService transformationService;
   
-  @Execution(ExecutionType.BLOCKING)
-  public void logger(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) logEvent logEvent,
+  @Execution(ExecutionType.CPU_LITE)
+  public void logger(@ParameterGroup(name = "Logger") @Expression(value = NOT_SUPPORTED) LoggerProcessor loggerProcessor,
+                     @Config JsonLoggerConfig config,
                      CorrelationInfo correlationInfo,
                      ComponentLocation location,
-                     @Config JsonloggerConfiguration config,
                      CompletionCallback<Void, Void> callback) {
     
-    String priority = logEvent.getPriority().toString();
+    String priority = loggerProcessor.getPriority().toString();
     if (!isLogEnabled(priority)) {
       callback.success(VOID_RESULT);
       return;
@@ -69,23 +67,23 @@ public class JsonloggerOperations {
     ObjectNode logEvent = om.getObjectMapper().createObjectNode();
     
     logEvent.put(Constants.CORRELATION_ID, correlationInfo.getCorrelationId())
-      .put(Constants.MESSAGE, logEvent.getMessage())
+      .put(Constants.MESSAGE, loggerProcessor.getMessage())
       .put(Constants.TIMSTAMP, Instant.now().toString())
       .putPOJO(Constants.APPLICATION, config.getGlobalSettings())
       .put(Constants.THREAD_NAME, Thread.currentThread().getName())
       .put(Constants.PRIORITY, priority)
-      .put(Constants.TRACE_POINT, logEvent.getTracePoint().value());
+      .put(Constants.TRACE_POINT, loggerProcessor.getTracePoint().value());
     
     addLocationInfo(logEvent, location, config.getJsonOutput().isLogLocationInfo());
     
-    addContent(logEvent, logEvent.getContent(), config);
+    addContent(logEvent, loggerProcessor.getContent(), config);
     
     log(logEvent, priority, config.getJsonOutput().isPrettyPrint());
     
     callback.success(VOID_RESULT);
   }
   
-  private void addContent(ObjectNode logEvent, ParameterResolver<TypedValue<InputStream>> v, JsonloggerConfiguration config) {
+  private void addContent(ObjectNode logEvent, ParameterResolver<TypedValue<InputStream>> v, JsonLoggerConfig config) {
     try {
       TypedValue<InputStream> typedVal = v.resolve();
       if (typedVal.getValue() == null) {
@@ -189,22 +187,16 @@ public class JsonloggerOperations {
   }
   
   @Execution(ExecutionType.BLOCKING)
-  public void loggerScope(@DisplayName("Module configuration") @Example("JSON_Logger_Config") @Summary("Indicate which Global config should be associated with this Scope.") String configurationRef,
-                          @Optional(defaultValue = "INFO") Priority priority,
-                          @Optional(defaultValue = "OUTBOUND_REQUEST_SCOPE") ScopeTracePoint scopeTracePoint,
-                          @Optional(defaultValue = "#[correlationId]") @Placement(tab = "Advanced") String correlationId,
-                          ComponentLocation location,
+  public void loggerScope(@ParameterGroup(name = "ScopeLogger") @Expression(value = NOT_SUPPORTED) LoggerScopeProcessor loggerProcessor,
+                          @Config JsonLoggerConfig config,
                           CorrelationInfo correlationInfo,
+                          ComponentLocation location,
                           FlowListener flowListener,
                           Chain operations,
                           CompletionCallback<Object, Object> callback) {
     
-    Long initialTimestamp, loggerTimestamp;
-    initialTimestamp = loggerTimestamp = System.currentTimeMillis();
-    
-    long elapsed = loggerTimestamp - initialTimestamp;
-    
-    if (!isLogEnabled(priority.toString())) {
+    String priority = loggerProcessor.getPriority().value();
+    if (!isLogEnabled(priority)) {
       operations.process(
         callback::success,
         (error, previous) -> {
@@ -212,55 +204,43 @@ public class JsonloggerOperations {
         });
       return;
     }
-    
+
     ObjectNode logEvent = om.getObjectMapper(new ArrayList<>()).createObjectNode();
+  
+    Instant startTime = Instant.now();
     
-    logEvent.put(Constants.CORRELATION_ID, correlationId)
-      .put(Constants.TRACE_POINT, scopeTracePoint.toString() + "_BEFORE")
-      .put(Constants.PRIORITY, priority.toString())
-      .put(Constants.ELAPSED, elapsed)
+    logEvent.put(Constants.CORRELATION_ID, correlationInfo.getCorrelationId())
+      .put(Constants.TRACE_POINT, loggerProcessor.getScopeTracePoint().value() + "_BEFORE")
+      .put(Constants.PRIORITY, priority)
       .put(Constants.SCOPE_ELAPSED, 0)
-      .put(Constants.TIMSTAMP, Instant.now().toString())
-      .putPOJO(Constants.APPLICATION, configs.getConfig(configurationRef).getGlobalSettings())
+      .put(Constants.TIMSTAMP, startTime.toString())
+      .putPOJO(Constants.APPLICATION, config.getGlobalSettings())
       .put(Constants.THREAD_NAME, Thread.currentThread().getName());
     
     addLocationInfo(logEvent, location, true);
     
-    log(logEvent, priority.toString(), configs.getConfig(configurationRef).getJsonOutput().isPrettyPrint());
+    log(logEvent, priority, config.getJsonOutput().isPrettyPrint());
     
-    Long finalInitialTimestamp = initialTimestamp;
     operations.process(
       result -> {
-        Long scopeElapsed = endScopeTimestamp - loggerTimestamp;
-        Long mainElapsed = endScopeTimestamp - initialTimestamp;
+        Instant endTime = Instant.now();
+        logEvent.put(Constants.TRACE_POINT, loggerProcessor.getScopeTracePoint().value() + "_AFTER")
+          .put(Constants.PRIORITY, priority)
+          .put(Constants.SCOPE_ELAPSED, Duration.between(startTime, endTime).toMillis())
+          .put(Constants.TIMSTAMP, endTime.toString());
         
-        logEvent.put(Constants.TRACE_POINT, scopeTracePoint.toString() + "_AFTER")
-          .put(Constants.PRIORITY, priority.toString())
-          .put(Constants.SCOPE_ELAPSED, scopeElapsed)
-          .put(Constants.TIMSTAMP, Instant.now().toString());
-        
-        // Print Logger
-        String finalLogAfter = printObjectToLog(logEvent, priority.toString(), configs.getConfig(configurationRef).getJsonOutput().isPrettyPrint());
-        
+        log(logEvent, priority, config.getJsonOutput().isPrettyPrint());
         callback.success(result);
       },
       (error, previous) -> {
+        Instant endTime = Instant.now();
+        logEvent.put(Constants.MESSAGE, error.getMessage())
+          .put(Constants.TRACE_POINT, "EXCEPTION_SCOPE")
+          .put(Constants.PRIORITY, "ERROR")
+          .put(Constants.SCOPE_ELAPSED, Duration.between(startTime, endTime).toMillis())
+          .put(Constants.TIMSTAMP, endTime.toString());
         
-        
-        Long mainElapsed = errorScopeTimestamp - finalInitialTimestamp;
-        
-        // Calculate elapsed time
-        Long scopeElapsed = errorScopeTimestamp - loggerTimestamp;
-        
-        logEvent.put("message", "Error found: " + error.getMessage());
-        logEvent.put("tracePoint", "EXCEPTION_SCOPE");
-        logEvent.put("priority", "ERROR");
-        logEvent.put("elapsed", mainElapsed);
-        logEvent.put("scopeElapsed", scopeElapsed);
-        logEvent.put("timestamp", Instant.now().toString());
-        
-        log(logEvent, "ERROR", configs.getConfig(configurationRef).getJsonOutput().isPrettyPrint());
-        
+        log(logEvent, "ERROR", config.getJsonOutput().isPrettyPrint());
         callback.error(error);
       });
   }

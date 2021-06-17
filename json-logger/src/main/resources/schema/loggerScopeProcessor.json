@@ -15,6 +15,31 @@
         "default": "OUTBOUND_REQUEST_SCOPE",
         "summary": "Current processing stage"
       }
+    },
+    "correlationId": {
+      "type": "string",
+      "sdk": {
+        "default": "#[correlationId]",
+        "placement": {
+          "tab": "Advanced"
+        }
+      }
+    },
+    "priority": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.Priority",
+      "enum": [
+        "DEBUG",
+        "TRACE",
+        "INFO",
+        "WARN",
+        "ERROR"
+      ],
+      "sdk": {
+        "default": "INFO",
+        "summary": "Logger priority"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
     }
   }
 }
