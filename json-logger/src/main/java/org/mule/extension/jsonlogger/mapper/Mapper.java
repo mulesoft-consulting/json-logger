@@ -1,4 +1,4 @@
-package org.mule.extension.jsonlogger.internal.mapper;
+package org.mule.extension.jsonlogger.mapper;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.util.List;
 
-public class ObjectMapperSingleton {
+public class Mapper {
   
   private final ObjectMapper om = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -16,7 +16,6 @@ public class ObjectMapperSingleton {
   private final ObjectMapper maskingMapper = new ObjectMapper()
     .setSerializationInclusion(JsonInclude.Include.NON_NULL)
     .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-  
   
   public ObjectMapper getObjectMapper(List<String> maskedFields) {
     SimpleModule module = new SimpleModule();

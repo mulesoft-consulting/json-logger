@@ -1,4 +1,4 @@
-package org.mule.extension.jsonlogger.internal.mapper;
+package org.mule.extension.jsonlogger.mapper;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.deser.std.JsonNodeDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -170,7 +169,11 @@ class MaskingDeserializer extends JsonNodeDeserializer {
   }
   
   private String replace(String input) {
-    return StringUtils.repeat("*", input.length());
+    int len = input.length();
+    StringBuilder sb = new StringBuilder(len);
+    for(int i = 0; i < len; i++){
+      sb.append('*');
+    }
+    return sb.toString();
   }
-  
 }

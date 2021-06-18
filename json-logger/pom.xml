@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>ORG_ID_TOKEN</groupId>
+    <groupId>7abbfaeb-3816-4907-865e-76d7cb24120f</groupId>
     <artifactId>json-logger</artifactId>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
     <packaging>mule-extension</packaging>
     <name>JSON Logger - Mule 4</name>
 
@@ -28,37 +28,11 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
             </plugin>
-            <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>0.4.35</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.github.mulesoft-consulting</groupId>
-                        <artifactId>jsonschema2pojo-mule-annotations</artifactId>
-                        <version>1.2.0</version>
-                        <scope>compile</scope>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <customAnnotator>org.mule.custom.annotation.utils.CustomMuleAnnotator</customAnnotator>
-                    <sourceDirectory>${basedir}/src/main/resources/schema</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-                    <targetPackage>org.mule.extension.jsonlogger.api.pojos</targetPackage>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+
         </plugins>
     </build>
 
     <distributionManagement>
-        <!-- Target Anypoint Organization Repository -->
         <repository>
             <id>Exchange2</id>
             <name>Exchange2 Repository</name>
@@ -73,17 +47,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.10.3</version>
         </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.lmax</groupId>-->
-<!--            <artifactId>disruptor</artifactId>-->
-<!--            <version>3.4.2</version>-->
-<!--        </dependency>-->
     </dependencies>
     <repositories>
         <!-- Shared Mule Services Repository -->
