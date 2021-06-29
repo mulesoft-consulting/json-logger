@@ -11,9 +11,10 @@ class Constants {
   static final String FILE_NAME = "fileName";
   static final String LINE_NUMBER = "lineNumber";
   static final String TIMSTAMP = "timestamp";
-  static final String THREAD_NAME = "threadName";
   static final String MESSAGE = "message";
   static final String PRIORITY = "priority";
   static final String TRACE_POINT = "tracePoint";
-  static final String SCOPE_ELAPSED = "scopeLapsed";
+  static final String ELAPSED = "elapsed";
+  static final String START_TIME = "startTime";
+  static final String END_TIME = "endTime";
 }

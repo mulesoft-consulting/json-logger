@@ -3,58 +3,64 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>7abbfaeb-3816-4907-865e-76d7cb24120f</groupId>
-    <artifactId>json-logger</artifactId>
-    <version>3.0.0</version>
-    <packaging>mule-extension</packaging>
-    <name>JSON Logger - Mule 4</name>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>7abbfaeb-3816-4907-865e-76d7cb24120f</groupId>
+  <artifactId>json-logger</artifactId>
+  <version>3.0.0</version>
+  <packaging>mule-extension</packaging>
+  <name>JSON Logger - Mule 4</name>
 
-    <parent>
-        <groupId>org.mule.extensions</groupId>
-        <artifactId>mule-modules-parent</artifactId>
-        <version>1.1.1</version>
-    </parent>
+  <parent>
+    <groupId>org.mule.extensions</groupId>
+    <artifactId>mule-modules-parent</artifactId>
+    <version>1.1.1</version>
+  </parent>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
-            </plugin>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>2.5.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+      </plugin>
 
-        </plugins>
-    </build>
+    </plugins>
+  </build>
 
-    <distributionManagement>
-        <repository>
-            <id>Exchange2</id>
-            <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
-            <layout>default</layout>
-        </repository>
-    </distributionManagement>
+  <distributionManagement>
+    <repository>
+      <id>Exchange2</id>
+      <name>Exchange2 Repository</name>
+      <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
+      <layout>default</layout>
+    </repository>
+  </distributionManagement>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.10.3</version>
-        </dependency>
-    </dependencies>
-    <repositories>
-        <!-- Shared Mule Services Repository -->
-        <repository>
-            <id>Exchange2</id>
-            <name>Exchange2 Repository</name>
-            <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.10.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.14.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <!-- Shared Mule Services Repository -->
+    <repository>
+      <id>Exchange2</id>
+      <name>Exchange2 Repository</name>
+      <url>https://maven.anypoint.mulesoft.com/api/v1/organizations/${project.groupId}/maven</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
 </project>

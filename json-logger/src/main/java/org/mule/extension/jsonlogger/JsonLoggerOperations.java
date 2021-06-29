@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mule.extension.jsonlogger.config.JsonLoggerConfig;
-import org.mule.extension.jsonlogger.config.LoggerProcessor;
-import org.mule.extension.jsonlogger.config.LoggerScopeProcessor;
-import org.mule.extension.jsonlogger.mapper.Mapper;
+import org.mule.extension.jsonlogger.config.LogProcessor;
+import org.mule.extension.jsonlogger.config.ScopeProcessor;
 import org.mule.runtime.api.component.location.ComponentLocation;
+import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
@@ -23,10 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.time.Duration.between;
@@ -35,94 +34,135 @@ import static org.mule.runtime.api.metadata.DataType.TEXT_STRING;
 
 public class JsonLoggerOperations {
   
-  protected static Logger log = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
+  private final static Logger log = LoggerFactory.getLogger("org.mule.extension.jsonlogger.JsonLogger");
   private final Result<Void, Void> VOID_RESULT = Result.<Void, Void>builder().build();
-  private final Mapper om = new Mapper();
   
   @Inject
   private TransformationService transformationService;
   
   public void logger(@ParameterGroup(name = "Logger")
                      @Expression(value = NOT_SUPPORTED)
-                       LoggerProcessor loggerProcessor,
+                       LogProcessor logProcessor,
                      @Config
                        JsonLoggerConfig config,
                      ComponentLocation location,
                      CompletionCallback<Void, Void> callback) {
     
-    String priority = loggerProcessor.getPriority().toString();
+    String priority = logProcessor.getPriority().toString();
     if (!isLogEnabled(priority)) {
       callback.success(VOID_RESULT);
-      return;
+     return;
     }
+    ObjectNode logEvent = Mapper.getInstance().createObjectNode();
     
-    ObjectNode logEvent = om.getObjectMapper().createObjectNode();
-    
-    logEvent.put(Constants.CORRELATION_ID, loggerProcessor.getCorrelationId())
-      .put(Constants.MESSAGE, loggerProcessor.getMessage())
-      .put(Constants.APPLICATION_NAME, config.getApplicationName())
-      .put(Constants.APPLICATION_VERSION, config.getApplicationVersion())
-      .put(Constants.ENVIRONMENT, config.getEnvironment())
+    logEvent.put(Constants.CORRELATION_ID, logProcessor.getCorrelationId())
+      .put(Constants.MESSAGE, logProcessor.getMessage())
       .put(Constants.PRIORITY, priority)
-      .put(Constants.TRACE_POINT, loggerProcessor.getTracePoint().toString());
+      .put(Constants.TRACE_POINT, logProcessor.getTracePoint().toString());
     
-    addLocationInfo(logEvent, location, config.isLogLocationInfo());
+    addLocationInfo(logEvent, location);
     
-    addContent(logEvent, loggerProcessor.getContent(), config);
+    addAppInfo(logEvent, config);
+    
+    addContent(logEvent, logProcessor.getContent(), config);
     
     log(logEvent, priority, config.isPrettyPrint());
     
     callback.success(VOID_RESULT);
   }
   
-  private void addContent(ObjectNode logEvent, ParameterResolver<TypedValue<InputStream>> v, JsonLoggerConfig config) {
+  // scope operations cannot receive config at this time
+  public void loggerScope(@ParameterGroup(name = "LoggerScope")
+                          @Expression(value = NOT_SUPPORTED)
+                            ScopeProcessor scopeProcessor,
+                          ComponentLocation location,
+                          Chain operations,
+                          CompletionCallback<Object, Object> callback) {
+    
+    String priority = scopeProcessor.getPriority().toString();
+    if (!isLogEnabled(priority)) {
+      operations.process(
+        callback::success,
+        (error, previous) -> {
+          callback.error(error);
+        });
+      return;
+    }
+    
+    ObjectNode logEvent = Mapper.getInstance().createObjectNode();
+    
+    Instant startTime = Instant.now();
+    
+    logEvent.put(Constants.CORRELATION_ID, scopeProcessor.getCorrelationId())
+      .put(Constants.TRACE_POINT, scopeProcessor.getScopeTracePoint().toString() + "_BEFORE")
+      .put(Constants.PRIORITY, priority)
+      .put(Constants.START_TIME, startTime.toString());
+    
+    addLocationInfo(logEvent, location);
+    
+    operations.process(
+      result -> {
+        Instant endTime = Instant.now();
+        logEvent.put(Constants.TRACE_POINT, scopeProcessor.getScopeTracePoint().toString() + "_AFTER")
+          .put(Constants.PRIORITY, priority)
+          .put(Constants.ELAPSED, between(startTime, endTime).toMillis())
+          .put(Constants.END_TIME, endTime.toString());
+        
+        log(logEvent, priority, true);
+        callback.success(result);
+      },
+      (error, previous) -> {
+        Instant endTime = Instant.now();
+        logEvent.put(Constants.MESSAGE, error.getMessage())
+          .put(Constants.TRACE_POINT, "EXCEPTION_SCOPE")
+          .put(Constants.PRIORITY, "ERROR")
+          .put(Constants.ELAPSED, between(startTime, endTime).toMillis())
+          .put(Constants.END_TIME, endTime.toString());
+        log(logEvent, "ERROR", true);
+        callback.error(error);
+      });
+  }
+  
+  void addContent(ObjectNode logEvent, ParameterResolver<TypedValue<InputStream>> v, JsonLoggerConfig config) {
     TypedValue<InputStream> typedVal = null;
+    InputStream inputStream = null;
     try {
       typedVal = v.resolve();
-      if (typedVal.getValue() == null) {
+      if (typedVal == null) {
+        return;
+      }
+      inputStream = typedVal.getValue();
+      if (inputStream == null ) {
+        return;
+      }
+  
+      DataType dataType = typedVal.getDataType();
+  
+      //if payload is java, then use toString()
+      if (MediaType.APPLICATION_JAVA.matches(dataType.getMediaType())) {
+        ObjectInputStream ois = new ObjectInputStream(inputStream);
+        logEvent.put(Constants.CONTENT, ois.readObject().toString());
         return;
       }
       
-      if (!config.isParseContentFieldsInJsonOutput() ||
-        !typedVal.getDataType().getMediaType().matches(MediaType.APPLICATION_JSON)) {
-        logEvent.put(Constants.CONTENT, (String)
-          transformationService.transform(typedVal.getValue(),
-            typedVal.getDataType(),
-            TEXT_STRING));
-        
+      //if payload is anything other java and json, then use transformationService
+      if (!MediaType.APPLICATION_JSON.matches(dataType.getMediaType())) {
+        logEvent.put(Constants.CONTENT, (String) transformationService.transform(inputStream,
+          dataType,
+          TEXT_STRING));
         return;
       }
       
-      // Apply data masking only if needed
-      ObjectMapper mapper;
-      List<String> dataMaskingFields = null;
-      if (config.getContentFieldsDataMasking() != null) {
-        dataMaskingFields = new ArrayList<>();
-        String[] split = config
-          .getContentFieldsDataMasking()
-          .trim()
-          .split(",");
-        
-        for (String s : split) {
-          dataMaskingFields.add(s.trim());
-        }
-        
-      }
-      
-      if (dataMaskingFields == null || dataMaskingFields.isEmpty()) {
-        mapper = om.getObjectMapper();
-      } else {
-        mapper = om.getObjectMapper(dataMaskingFields);
-      }
-      
-      logEvent.put(Constants.CONTENT, mapper.readTree(typedVal.getValue()));
+      ObjectMapper mapper = Mapper.getInstance(config.getContentFieldsDataMasking());
+      log.error(config.getContentFieldsDataMasking());
+      logEvent.put(Constants.CONTENT, mapper.readTree(inputStream));
       
     } catch (Exception e) {
       logEvent.put(Constants.CONTENT, e.getMessage());
     } finally {
-      if (typedVal != null &&  typedVal.getValue() != null) {
+      if (typedVal != null && inputStream != null) {
         try {
-          typedVal.getValue().close();
+          inputStream.close();
         } catch (Exception e) {
           log.debug("Can't close stream", e);
         }
@@ -130,10 +170,13 @@ public class JsonLoggerOperations {
     }
   }
   
-  private void addLocationInfo(ObjectNode logEvent, ComponentLocation location, boolean shouldLogLocation) {
-    if (!shouldLogLocation) {
-      return;
-    }
+  void addAppInfo(ObjectNode logEvent, JsonLoggerConfig config) {
+    logEvent.put(Constants.APPLICATION_NAME, config.getApplicationName());
+    logEvent.put(Constants.APPLICATION_VERSION, config.getApplicationVersion());
+    logEvent.put(Constants.ENVIRONMENT, config.getEnvironment());
+  }
+  
+  void addLocationInfo(ObjectNode logEvent, ComponentLocation location) {
     Map<String, String> locationInfo = new HashMap<>();
     locationInfo.put(Constants.ROOT_CONTAINER, location.getRootContainerName());
     locationInfo.put(Constants.FILE_NAME, location.getFileName().orElse(""));
@@ -143,8 +186,8 @@ public class JsonLoggerOperations {
   
   private void log(ObjectNode logEvent, String priority, boolean isPrettyPrint) {
     ObjectWriter ow = isPrettyPrint ?
-      om.getObjectMapper().writer().withDefaultPrettyPrinter() :
-      om.getObjectMapper().writer();
+      Mapper.getInstance().writer().withDefaultPrettyPrinter() :
+      Mapper.getInstance().writer();
     try {
       doLog(priority, ow.writeValueAsString(logEvent));
     } catch (Exception e) {
@@ -189,60 +232,6 @@ public class JsonLoggerOperations {
         return log.isErrorEnabled();
     }
     return false;
-  }
-  
-  // scope operations cannot receive config at this time
-  public void loggerScope(@ParameterGroup(name = "ScopeLogger")
-                          @Expression(value = NOT_SUPPORTED)
-                            LoggerScopeProcessor loggerProcessor,
-                          ComponentLocation location,
-                          Chain operations,
-                          CompletionCallback<Object, Object> callback) {
-    
-    String priority = loggerProcessor.getPriority().toString();
-    if (!isLogEnabled(priority)) {
-      operations.process(
-        callback::success,
-        (error, previous) -> {
-          callback.error(error);
-        });
-      return;
-    }
-    
-    ObjectNode logEvent = om.getObjectMapper(new ArrayList<>()).createObjectNode();
-    
-    Instant startTime = Instant.now();
-    
-    logEvent.put(Constants.CORRELATION_ID, loggerProcessor.getCorrelationId())
-      .put(Constants.TRACE_POINT, loggerProcessor.getScopeTracePoint().toString() + "_BEFORE")
-      .put(Constants.PRIORITY, priority)
-      .put(Constants.SCOPE_ELAPSED, 0)
-      .put(Constants.TIMSTAMP, startTime.toString());
-    
-    addLocationInfo(logEvent, location, true);
-    
-    log(logEvent, priority, true);
-    
-    operations.process(
-      result -> {
-        Instant endTime = Instant.now();
-        logEvent.put(Constants.TRACE_POINT, loggerProcessor.getScopeTracePoint().toString() + "_AFTER")
-          .put(Constants.PRIORITY, priority)
-          .put(Constants.SCOPE_ELAPSED, between(startTime, endTime).toMillis())
-          .put(Constants.TIMSTAMP, endTime.toString());
-        
-        log(logEvent, priority, true);
-        callback.success(result);
-      },
-      (error, previous) -> {
-        Instant endTime = Instant.now();
-        logEvent.put(Constants.MESSAGE, error.getMessage())
-          .put(Constants.TRACE_POINT, "EXCEPTION_SCOPE")
-          .put(Constants.PRIORITY, "ERROR")
-          .put(Constants.SCOPE_ELAPSED, between(startTime, endTime).toMillis());
-        log(logEvent, "ERROR", true);
-        callback.error(error);
-      });
   }
 }
 

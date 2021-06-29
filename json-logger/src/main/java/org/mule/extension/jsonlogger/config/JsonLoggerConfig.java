@@ -6,32 +6,13 @@ import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
 import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 
 @Configuration(name = "config")
 @Operations({JsonLoggerOperations.class})
 public class JsonLoggerConfig {
-  
-  @Parameter
-  @Optional(defaultValue = "")
-  @Expression(NOT_SUPPORTED)
-  String applicationName;
-  
-  @Parameter
-  @Optional(defaultValue = "")
-  @Expression(NOT_SUPPORTED)
-  String applicationVersion;
-  
-  @Parameter
-  @Optional(defaultValue = "")
-  @Expression(NOT_SUPPORTED)
-  String environment;
-  
-  @Parameter
-  @Optional
-  @Expression(NOT_SUPPORTED)
-  String disabledFields;
   
   @Parameter
   @Optional
@@ -43,91 +24,63 @@ public class JsonLoggerConfig {
   @Expression(NOT_SUPPORTED)
   boolean prettyPrint;
   
-  @Parameter
-  @Optional(defaultValue = "true")
-  @Expression(NOT_SUPPORTED)
-  boolean logLocationInfo;
   
   @Parameter
-  @Optional(defaultValue = "true")
-  @Expression(NOT_SUPPORTED)
-  boolean parseContentFieldsInJsonOutput;
+  @Optional(defaultValue = "applicationName")
+  @Summary("Name of the application")
+  private String applicationName;
+  
+  @Parameter
+  @Optional(defaultValue = "applicationVersion")
+  @Summary("Version of the application")
+  private String applicationVersion;
+  
+  @Parameter
+  @Optional(defaultValue = "environment")
+  private String environment;
   
   public String getApplicationName() {
     return applicationName;
   }
   
-  public void setApplicationName(String applicationName) {
+  public JsonLoggerConfig setApplicationName(String applicationName) {
     this.applicationName = applicationName;
+    return this;
   }
   
   public String getApplicationVersion() {
     return applicationVersion;
   }
   
-  public void setApplicationVersion(String applicationVersion) {
+  public JsonLoggerConfig setApplicationVersion(String applicationVersion) {
     this.applicationVersion = applicationVersion;
+    return this;
   }
   
   public String getEnvironment() {
     return environment;
   }
   
-  public void setEnvironment(String environment) {
+  public JsonLoggerConfig setEnvironment(String environment) {
     this.environment = environment;
+    return this;
   }
   
   public boolean isPrettyPrint() {
     return prettyPrint;
   }
   
-  public void setPrettyPrint(boolean prettyPrint) {
+  public JsonLoggerConfig setPrettyPrint(boolean prettyPrint) {
     this.prettyPrint = prettyPrint;
-  }
-  
-  public boolean isLogLocationInfo() {
-    return logLocationInfo;
-  }
-  
-  public void setLogLocationInfo(boolean logLocationInfo) {
-    this.logLocationInfo = logLocationInfo;
-  }
-  
-  public boolean isParseContentFieldsInJsonOutput() {
-    return parseContentFieldsInJsonOutput;
-  }
-  
-  public void setParseContentFieldsInJsonOutput(boolean parseContentFieldsInJsonOutput) {
-    this.parseContentFieldsInJsonOutput = parseContentFieldsInJsonOutput;
-  }
-  
-  public String getDisabledFields() {
-    return disabledFields;
-  }
-  
-  public void setDisabledFields(String disabledFields) {
-    this.disabledFields = disabledFields;
+    return this;
   }
   
   public String getContentFieldsDataMasking() {
     return contentFieldsDataMasking;
   }
   
-  public void setContentFieldsDataMasking(String contentFieldsDataMasking) {
+  public JsonLoggerConfig setContentFieldsDataMasking(String contentFieldsDataMasking) {
     this.contentFieldsDataMasking = contentFieldsDataMasking;
-  }
-  
-  @Override
-  public String toString() {
-    return "{" +
-      "applicationName='" + applicationName + '\'' +
-      ", applicationVersion='" + applicationVersion + '\'' +
-      ", environment='" + environment + '\'' +
-      ", disabledFields='" + disabledFields + '\'' +
-      ", contentFieldsDataMasking='" + contentFieldsDataMasking + '\'' +
-      ", prettyPrint=" + prettyPrint +
-      ", logLocationInfo=" + logLocationInfo +
-      ", parseContentFieldsInJsonOutput=" + parseContentFieldsInJsonOutput +
-      '}';
+    return this;
   }
 }
