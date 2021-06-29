@@ -1,0 +1,17 @@
+{
+  "passenger": {
+    "name": "John Doe",
+    "phone": "888-900-0000",
+    "gender": "male",
+    "dateOfBirth": "10-10-2020",
+    "address": {
+      "city": "Dallas"
+    }
+  },
+  "destination": {
+    "city": "Phoenix"
+  },
+  "documents": {
+    "passport": "12345689"
+  }
+}

@@ -1,31 +1,38 @@
-# Json-logger Extension
+# Json-logger Extension for Mule 4 runtime
 
-## 2.0.1 version - Release notes
+Json logger makes uses of [Mule Java SDK](https://docs.mulesoft.com/mule-sdk/1.1/getting-started) 
+and contains a custom deserializer for masking fields in the JSON.
 
-Bug fixes:
-* Added support for large payloads
+> Data masking is not possible in any other formats at this time e.g. xml, csv, etc.
 
-## 2.0.0 version - Release notes
+## Serialization/Deserialization performance penalty
+When the payload is passed into the json logger component as `application/json`, it is first deserialized 
+and masking if specified is applied in place. The serialization takes place when the log is being written out. 
+Therefore, at the very minimum, it is a two-step process. The transformation done before or after the json logger 
+to convert payload to `application/java` from `application/json` and vice versa will degrade performance.
 
-New features:
-* External Destinations
-* Data masking
+## Operations:
+There are two operations available:
+1. logger: Use this for regular logging 
+2. loggerScope: Use this to measure response times for external calls
 
-Improvements:
-* Field ordering
-
-More details in the coming blog post (stay tuned!)
-
-## 1.1.0 version - Release notes
-
-New features:
-* Scoped loggers to capture "scope bound elapsed time". Great for performance tracking of specific components (e.g. outbound calls)
-* Added "Parse content fields in json output" flag so that content fields can become part of final JSON output rather than a "stringified version" of the content
-
-Improvements:
-* Removed Guava and caching in general with a more efficient handling of timers (for elapsed time)
-* Optimized generation of JSON output
-* Code optimizations
-* Minimized dependency footprint (down from ~23MB to ~13MB)
-* Optimized parsing of TypedValue content fields
-
+## Logging structure:
+```json
+ {
+  "correlationId" : "cbfb9c1f-f904-40f2-bad9-2eac6bc05e84",
+  "message" : "",
+  "content": {
+    "dateOfBirth": "**-**-****"
+  },
+  "priority" : "INFO",
+  "tracePoint" : "START",
+  "locationInfo" : {
+    "fileName" : "api-main-router.xml",
+    "rootContainer" : "api-main",
+    "lineNumber" : "25"
+  },
+  "applicationName" : "proc-checkin-api-v1",
+  "applicationVersion" : "1.2.7",
+  "environment" : "local"
+}
+```
