@@ -49,6 +49,37 @@ PS2. For EU Control Plane deployment you have to modify the `<distributionManage
 
 ##  Release notes [HERE](https://github.com/mulesoft-consulting/json-logger/blob/mule-4.x/json-logger/README.md)
 
+## Dependencies
+with latest changes to add additional fields and making them externalized, you need to add Global element properties file, for example :
+properties/json-logger.yaml (sample values are provided below)
+
+### JSON Logger configuration
+ 
+#### Indicate which fields should not be logged (it can take values content and message and needs to be comma separated)
+#### Specifies data to be masked in log output. Populate as necessary. Example: $..firstName,$..lastName
+
+json-logger:
+    disabled-fields: ""
+    data-to-mask: ""
+    orgName : SFCC
+    application:
+      version : 1.1.11
+      name : SALESFORCE_SYS_API
+    cloudhub:
+      environment : DEV1
+    entity: JOB_ORDER
+    entityId: JO_ID_18990
+    businessEvent: JO FILLED
+    sourceSystem: SALESFORCE
+    targetSystem: WORKDAY
+    retryCounter: "0"
+    errorSeverity: MAJOR
+    processName: RAW_QUEUE_VALIDATION
+    errorType: ErrorType_Dynamic
+    errorMessage: ErrorMessage_Dynamic
+    clientId: clientId_process_api_980
+    category: com.json-logger.SALESFORCE_SYS_API.RAW_QUEUE_VALIDATION
+
 ## Author
 
 * **Andres Ramirez** [Slack: @andres.ramirez / Email: andres.ramirez@mulesoft.com]
