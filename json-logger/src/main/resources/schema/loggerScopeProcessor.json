@@ -3,18 +3,171 @@
   "description": "Definition for fields used in the logger message processor",
   "type": "object",
   "properties": {
-    "scopeTracePoint": {
+    "correlationId": {
       "type": "string",
-      "javaType": "org.mule.extension.jsonlogger.api.pojos.ScopeTracePoint",
+      "sdk": {
+        "default": "#[correlationId]",
+        "placement": {
+          "tab": "Advanced"
+        }
+      }
+    },
+    "message": {
+      "type": "string",
+      "sdk": {
+        "example": "Add a log message",
+        "required": true,
+        "summary": "Message to be logged"
+      }
+    },
+    "entity": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.entity}",
+        "required": true,
+        "summary": "Message to be logged"
+      }
+    },
+    "entityId": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.entityId}",
+        "required": true,
+        "summary": "Record Unique Identifier"
+      }
+    },
+    "businessEvent": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.businessEvent}",
+        "required": true,
+        "summary": "Message to be logged"
+      }
+    },
+    "processName": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.processName}",
+        "required": true,
+        "summary": "Functional Name of the process that is being executed. Each API can have multiple functional resource endpoints being supported. This  attribute will reflect that."
+      }
+    },
+    "sourceSystem ": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.sourceSystem}",
+        "required": true,
+        "summary": "Source Platform "
+      }
+    },
+    "targetSystem": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.targetSystem}",
+        "required": true,
+        "summary": "Target System"
+      }
+    },
+    "clientId": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.clientId}",
+        "required": false,
+        "summary": "clientId part of request, optional"
+      }
+    },
+    "content": {
+      "type": "string",
+      "javaType": "org.mule.runtime.extension.api.runtime.parameter.ParameterResolver<org.mule.runtime.api.metadata.TypedValue<java.io.InputStream>>",
+      "sdk": {
+        "default": "#[import modules::JSONLoggerModule output application/json ---\n{\n    payload: JSONLoggerModule::stringifyNonJSON(payload) \n}]",
+        "summary": "NOTE: Writing the entire payload every time across your application can cause serious performance issues",
+        "required": false,
+        "isContent": true
+      }
+    },
+    "tracePoint": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.TracePoint",
       "enum": [
-        "DATA_TRANSFORM_SCOPE",
-        "OUTBOUND_REQUEST_SCOPE",
-        "FLOW_LOGIC_SCOPE"
+        "START",
+        "BEFORE_TRANSFORM",
+        "AFTER_TRANSFORM",
+        "BEFORE_REQUEST",
+        "AFTER_REQUEST",
+        "FLOW",
+        "END",
+        "EXCEPTION"
       ],
       "sdk": {
-        "default": "OUTBOUND_REQUEST_SCOPE",
+        "default": "START",
         "summary": "Current processing stage"
       }
+    },
+    "errorCode": {
+      "type": "string",
+      "sdk": {
+        "default": "#[vars.commonLoggerResponse.errorDetails[0].code]",
+        "required": true,
+        "summary": "Error Type"
+      }
+    },
+    "errorReason": {
+      "type": "string",
+      "sdk": {
+        "default": "#[vars.commonLoggerResponse.errorDetails[0].reason]",
+        "required": true,
+        "summary": "Error Type"
+      }
+    },
+    "errorMessage": {
+      "type": "string",
+      "sdk": {
+        "default": "#[vars.commonLoggerResponse.errorDetails[0].message]",
+        "required": true,
+        "summary": "Error Message"
+      }
+    },
+    "retryCounter": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.retryCounter}",
+        "required": true,
+        "summary": "Default 0 (no retry) Max 3 (event will be sent to DLQ) "
+      }
+    },
+    "errorSeverity": {
+      "type": "string",
+      "sdk": {
+        "example": "Add error Severity",
+        "required": true,
+        "summary": "Alert severity level"
+      }
+    },
+    "priority": {
+      "type": "string",
+      "javaType": "org.mule.extension.jsonlogger.api.pojos.Priority",
+      "enum": [
+        "DEBUG",
+        "TRACE",
+        "INFO",
+        "WARN",
+        "ERROR"
+      ],
+      "sdk": {
+        "default": "INFO",
+        "summary": "Logger priority"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
+    },
+    "category": {
+      "type": "string",
+      "sdk": {
+        "default": "${json-logger.category}",
+        "required": true,
+        "summary": "If not set, by default will log to the org.mule.extension.jsonlogger.JsonLogger category"
+      },
+      "note": "This field is mandatory. DON'T REMOVE"
     }
   }
 }
