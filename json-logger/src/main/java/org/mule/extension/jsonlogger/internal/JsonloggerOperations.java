@@ -20,6 +20,7 @@ import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.Config;
+import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
@@ -239,6 +240,7 @@ public class JsonloggerOperations {
      * Log scope
      */
     @Execution(ExecutionType.BLOCKING)
+    @MediaType("application/json")
     public void loggerScope(@DisplayName("Module configuration") @Example("JSON_Logger_Config") @Summary("Indicate which Global config should be associated with this Scope.") String configurationRef,
                             @Optional(defaultValue="INFO") Priority priority,
                             @Optional(defaultValue="OUTBOUND_REQUEST_SCOPE") ScopeTracePoint scopeTracePoint,
