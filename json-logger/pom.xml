@@ -17,11 +17,11 @@
     </parent>
 
     <properties>
-        <mule.version>4.3.0-20220922</mule.version>
+        <mule.version>4.3.0-20220919</mule.version>
         <mule.weave.version>2.5.0-20220921</mule.weave.version>
-        <mule.sdk.version>1.3.0-20220922</mule.sdk.version>
-        <mule.api.version>1.3.0-20220922</mule.api.version>
-        <mule.metadata.version>1.3.0-20220922</mule.metadata.version>
+        <mule.sdk.version>1.3.0-20220919</mule.sdk.version>
+        <mule.api.version>1.3.0-20220919</mule.api.version>
+        <mule.metadata.version>1.3.0-20220919</mule.metadata.version>
         <mule.extensions.ast.loader.version>1.2.0</mule.extensions.ast.loader.version>
         <mule.extensions.maven.plugin.version>1.3.0</mule.extensions.maven.plugin.version>
         <mule.app.plugins.maven.plugin.version>1.7.0</mule.app.plugins.maven.plugin.version>
